@@ -1,0 +1,75 @@
+﻿@using BugTracker.Helpers
+@using BugTracker.Models
+
+@model BugTracker.Models.Project
+
+    @{
+        ViewBag.Title = "Details";
+
+        var projectHelper = new ProjectManagerHelper();
+    }
+
+
+    <div>
+        <h4>Project</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Name)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Created)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Created)
+            </dd>
+
+        </dl>
+    </div>
+
+    <hr />
+
+    @using (Html.BeginForm("ManageUserProjects", "Admin", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("ProjectId", Model.Id)
+        <div class="row">
+            <div class="col-md-4">
+                @Html.ListBox("ProjectManagers")
+            </div>
+            <div class="col-md-4">
+                @Html.ListBox("Developers")
+            </div>
+            <div class="col-md-4">
+                @Html.ListBox("Submitters")
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Assign" class="btn btn-default" />
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <p>
+            @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+            @Html.ActionLink("Back to List", "Index")
+        </p>
+    </div>
+
+
+    <link href="~/Content/Custom.css" rel="stylesheet" />
