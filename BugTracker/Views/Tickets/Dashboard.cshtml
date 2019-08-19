@@ -1,0 +1,232 @@
+﻿@using BugTracker.Helpers
+
+@model BugTracker.Models.Ticket
+
+<div class="row">
+    <div class="col-md-12">
+        <section class="panel panel-transparent">
+            <header class="panel-heading">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
+                <h2 class="panel-title text-center">Ticket Information</h2>
+            </header>
+            
+        </section>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <section class="panel panel-transparent">
+            <header class="panel-heading">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
+                <h4 class="panel-title text-center">Ticket Attachments</h4>
+            </header>
+
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section class="panel panel-transparent">
+            <header class="panel-heading">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
+                <h4 class="panel-title text-center">Ticket Comments</h4>
+            </header>
+            <div class="notification-title">
+                <span class="pull-right label label-default">230</span>
+                Messages
+            </div>
+
+            <div class="content">
+                <ul>
+                    @foreach(var ticketComments in Model.TicketComments.OrderByDescending(c => c.Created))
+                    {
+                        <li>
+                            <figure class="image">
+                                <img src="@ticketComments.User.AvatarUrl" class="img-circle" />
+                            </figure>
+                            <span class="title">@ticketComments.User.DisplayName</span>
+                            <span class="message">@ticketComments.CommentBody</span>
+                        </li>
+                      }
+                </ul>
+            </div>
+                        
+            <hr />
+
+            <div class="mailbox-compose">
+                @*<form class="form-horizontal form-bordered form-bordered">*@
+                @using (Html.BeginForm("Create","TicketComments", FormMethod.Post, new { @class = "form-horizontal form-bordered form-bordered" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(model =>model. Id)
+                    @Html.HiddenFor(model => model.Created)
+                    
+                    <div class="form-group form-group-invisible">
+                        <label for="subject" class="control-label-invisible">Subject:</label>
+                        <div class="col-sm-offset-2 col-sm-9 col-md-offset-1 col-md-10">
+                            <input name="subject" type="text" class="form-control form-control-invisible" >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="compose">
+                            <div id="compose-field" type="text" class="compose-control" name="CommentBody">
+                            </div>
+                        </div>
+                    </div>
+
+                }
+            </div>
+
+            <hr/>
+            
+            <div>
+                <div class="text-right">
+                    <a href="@Url.Action("Index","Tickets")" class="view-more">View All</a>
+                </div>
+            </div>
+
+
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section class="panel panel-transparent">
+            <header class="panel-heading">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
+                <h4 class="panel-title text-center">Ticket History</h4>
+            </header>
+
+        </section>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+            @* ticket attachment *@
+            <div class="row">
+                <div class="col-md-12">
+                    @using (Html.BeginForm("Create", "TicketAttachments", FormMethod.Post, new { enctype = "Multipart/form-Data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("TicketId", Model.Id)
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h3>Title</h3>
+                                <input type="text" name="Title" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h3> Description</h3>
+                                <textarea rows="5" cols="100" typeof="text" name="AttachmentDescription"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button class="btn btn-default btn-sm" type="submit">Add Attachment</button>
+                            </div>
+                        </div>
+                    }
+
+                    <!--
+                       1-show icon
+                       2- show file name
+                       3- created date
+                       4- title
+                       5- description
+                       6- author name
+                    -->
+                    @foreach (var attachment in Model.TicketAttachment)
+                    {
+                        <div class="row">
+                            <div class=col-md-4>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        @*<img src="??"/>*@
+                                        <h2>image goes here</h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <a target="_blank" href="@attachment.AttachmentUrl">@Path.GetFileNameWithoutExtension(attachment.AttachmentUrl)</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-md-6">@attachment.Created.ToString("MMM d, yyyy")</div>
+                                    <div class="col-md-6">@attachment.User.DisplayName</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">@attachment.Title</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">@attachment.Description</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            @* Assign user to ticket *@
+            <div>
+                @using (Html.BeginForm("AssignTicket", "Tickets", FormMethod.Post))
+
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("TicketId", Model.Id)
+                    <div class="row form-horizontal">
+                        <h4>Ticket</h4>
+
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        @Html.HiddenFor(model => model.Id)
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.AssignedToUserId, "Assign Developer", new { @class = "control-label col-md-2" })
+                            <div class="col-md-10">
+                                @Html.DropDownList("Developers", null, "--Select Role--", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.AssignedToUserId, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-offset-2 col-md-10">
+                            <button class="btn btn-default btn-sm" type="submit">Assign User</button>
+                        </div>
+                    </div>
+
+                }
+
+                <div>
+                    @Html.ActionLink("Back To List", "Index")
+                </div>
+            </div>
+
+
+            @section scripts{
+
+                @Scripts.Render("~/bundles/jqueryval")
+
+            }

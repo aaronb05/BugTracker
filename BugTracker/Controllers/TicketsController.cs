@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using BugTracker.Helpers;
@@ -16,6 +17,9 @@ namespace BugTracker.Controllers
     {
         private ApplicationDbContext db = new ApplicationDbContext();
         private UserRolesHelper roleHelper = new UserRolesHelper();
+        private ProjectManagerHelper projectHelper = new ProjectManagerHelper();
+        private TicketHelper ticketHelper = new TicketHelper();
+        private NotificationHelper notificationHelper = new NotificationHelper();
 
         // GET: Tickets
         [Authorize]
@@ -53,7 +57,7 @@ namespace BugTracker.Controllers
         }
 
         // GET: Tickets/Details/5
-        public ActionResult Details(int? id)
+        public ActionResult Dashboard(int? id)
         {
             if (id == null)
             {
@@ -64,17 +68,23 @@ namespace BugTracker.Controllers
             {
                 return HttpNotFound();
             }
+
+            var allDevelopers = projectHelper.UsersOnProjectByRole(ticket.ProjectId, "Developer");
+         
+            ViewBag.Developers = new SelectList(allDevelopers, "Id", "DisplayName");
+
             return View(ticket);
         }
 
         // GET: Tickets/Create
+        //[Authorize(Roles = "Submitter")]
         public ActionResult Create()
         {
-            ViewBag.AssignedToUserId = new SelectList(db.Users, "Id", "FirstName");
-            ViewBag.OwnerUserId = new SelectList(db.Users, "Id", "FirstName");
-            ViewBag.ProjectId = new SelectList(db.Projects, "Id", "Name");
+            var myProjects = projectHelper.ListUserProjects(User.Identity.GetUserId());
+
+            ViewBag.ProjectId = new SelectList(myProjects, "Id", "Name");
+
             ViewBag.TicketPriorityId = new SelectList(db.TicketPriorities, "Id", "Name");
-            ViewBag.TicketStatusId = new SelectList(db.TicketStatuses, "Id", "Name");
             ViewBag.TicketTypeId = new SelectList(db.TicketType, "Id", "Name");
             return View();
         }
@@ -84,10 +94,18 @@ namespace BugTracker.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Title,Description,Body,Created,Updated,ProjectId,TicketTypeId,TicketPriorityId,TicketStatusId,OwnerUserId,AssignedToUserId")] Ticket ticket)
+        public ActionResult Create([Bind(Include = "Title,Description,ProjectId,TicketTypeId,TicketPriorityId")] Ticket ticket)
         {
             if (ModelState.IsValid)
             {
+
+                if (ModelState.IsValid)
+                {
+                    ticket.TicketStatusId = db.TicketStatuses.FirstOrDefault(t => t.Name == "New/UnAssigned").Id;
+                    ticket.Created = DateTime.Now;
+                    ticket.OwnerUserId = User.Identity.GetUserId();
+                }
+                
                 db.Tickets.Add(ticket);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -103,24 +121,51 @@ namespace BugTracker.Controllers
         }
 
         // GET: Tickets/Edit/5
+        [Authorize(Roles = "Admin, Project Manager, Submitter, Developer")]
         public ActionResult Edit(int? id)
-        {
+        {           
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
             Ticket ticket = db.Tickets.Find(id);
+
             if (ticket == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.AssignedToUserId = new SelectList(db.Users, "Id", "FirstName", ticket.AssignedToUserId);
-            ViewBag.OwnerUserId = new SelectList(db.Users, "Id", "FirstName", ticket.OwnerUserId);
-            ViewBag.ProjectId = new SelectList(db.Projects, "Id", "Name", ticket.ProjectId);
-            ViewBag.TicketPriorityId = new SelectList(db.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
-            ViewBag.TicketStatusId = new SelectList(db.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
-            ViewBag.TicketTypeId = new SelectList(db.TicketType, "Id", "Name", ticket.TicketTypeId);
-            return View(ticket);
+
+            var allowed = false;
+            var userId = User.Identity.GetUserId();
+          
+            //based on role, can i edit ticket
+            if (User.IsInRole("Developer") && ticket.AssignedToUserId != userId)
+                allowed = true;
+
+            else if (User.IsInRole("Submitter") && ticket.OwnerUserId == userId)
+                allowed = true;
+
+            else if (User.IsInRole("Project Manger"))
+            {
+               allowed = true;
+            }
+            else
+                    {
+                allowed = true;
+            }
+            if (allowed)
+            {
+                ViewBag.AssignedToUserId = new SelectList(db.Users, "Id", "FirstName", ticket.AssignedToUserId);
+                ViewBag.OwnerUserId = new SelectList(db.Users, "Id", "FirstName", ticket.OwnerUserId);
+                ViewBag.ProjectId = new SelectList(db.Projects, "Id", "Name", ticket.ProjectId);
+                ViewBag.TicketPriorityId = new SelectList(db.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
+                ViewBag.TicketStatusId = new SelectList(db.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
+                ViewBag.TicketTypeId = new SelectList(db.TicketType, "Id", "Name", ticket.TicketTypeId);
+               return View(ticket);
+            }
+
+            return RedirectToAction("AccessViolation, Admin");
         }
 
         // POST: Tickets/Edit/5
@@ -132,8 +177,13 @@ namespace BugTracker.Controllers
         {
             if (ModelState.IsValid)
             {
+                var oldTicket = db.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == ticket.Id);
+
                 db.Entry(ticket).State = EntityState.Modified;
                 db.SaveChanges();
+
+                NotificationHelper.CreateAssignmentNotification(oldTicket, ticket);
+
                 return RedirectToAction("Index");
             }
             ViewBag.AssignedToUserId = new SelectList(db.Users, "Id", "FirstName", ticket.AssignedToUserId);
@@ -179,5 +229,59 @@ namespace BugTracker.Controllers
             }
             base.Dispose(disposing);
         }
+
+        //GET
+        public ActionResult AssignTicket(int? id)
+        {
+            var ticket = db.Tickets.Find(id);
+            
+            var allDevelopers = projectHelper.UsersOnProjectByRole(ticket.ProjectId, "Developer");
+            ViewBag.Developers = new SelectList(allDevelopers, "Id", "DisplayName", ticket.AssignedToUserId);
+
+            return View(ticket);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AssignTicket(Ticket model, List<string> Developers, int ticketId)
+        {
+            var ticket = db.Tickets.Find(model.Id);
+
+            if (Developers != null)
+            {
+                foreach(var developerId in Developers)
+                {
+                    ticketHelper.AddUserToTicket(developerId, ticketId);
+                }
+                
+            }
+
+            db.SaveChanges();
+
+            var callbackUrl = Url.Action("Details", "Tickets", new { id = ticket.Id }, protocol: Request.Url.Scheme);
+
+            try
+            {
+                EmailService ems = new EmailService();
+                IdentityMessage msg = new IdentityMessage();
+                ApplicationUser user = db.Users.Find(model.AssignedToUserId);
+
+                msg.Body = "You have been assigned a new tikcet" + Environment.NewLine +
+                           "Please click the following link to the details" + "<a href=\"" + callbackUrl + "\">New Ticket</a>";
+                msg.Destination = user.Email;
+                msg.Subject = "Invite to Household";
+
+                await ems.SendMailAsync(msg);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                await Task.FromResult(0);
+            }
+
+            return RedirectToAction("Index");
+        }
+        
     }
 }

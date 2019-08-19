@@ -19,6 +19,7 @@ namespace BugTracker.Models
         //nav
 
         public virtual ICollection<Project>Projects { get; set; }
+        public virtual ICollection<Ticket> Tickets { get; set; }
         public virtual ICollection<TicketAttachment> TicketAttachments { get; set; }
         public virtual ICollection<TicketComment> TicketComments { get; set; }
         public virtual ICollection<TicketHistory> TicketHistory{ get; set; }

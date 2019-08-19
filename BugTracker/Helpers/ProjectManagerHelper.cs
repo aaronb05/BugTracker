@@ -29,6 +29,8 @@ namespace BugTracker.Helpers
 
             return people;
         }
+
+        
         public bool IsUserOnProject(string userId, int projectId)
         {
            var project = db.Projects.Find(projectId);

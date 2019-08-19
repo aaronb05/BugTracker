@@ -35,7 +35,7 @@ namespace BugTracker.Controllers
                 return HttpNotFound();
             }
             
-            var allProjectManagers = roleHelper.UsersInRole("ProjectManager");
+            var allProjectManagers = roleHelper.UsersInRole("Project Manager");
             var currentProjectManagers = projectHelper.UsersInRoleOnProject(project.Id, "ProjectManager");
             ViewBag.ProjectManagers = new MultiSelectList(allProjectManagers, "Id", "DisplayName", currentProjectManagers);
 
@@ -63,16 +63,18 @@ namespace BugTracker.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Description,Created")] Project project)
+        public ActionResult Create([Bind(Include = "Id,Name,Description")] Project project)
         {
             if (ModelState.IsValid)
             {
+                project.Created = DateTime.Now;
                 db.Projects.Add(project);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
             return View(project);
+
         }
 
         // GET: Projects/Edit/5

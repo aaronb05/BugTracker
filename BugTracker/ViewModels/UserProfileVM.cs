@@ -30,7 +30,7 @@ namespace BugTracker.ViewModels
         public string Email { get; set; }
         public string AvatarUrl { get; set; }
        
-     public HttpPostedFileBase Avatar { get; set; }
+     
 
     } 
 }

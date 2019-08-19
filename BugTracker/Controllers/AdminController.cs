@@ -16,7 +16,7 @@ namespace BugTracker.Controllers
         private ProjectManagerHelper projectHelper = new ProjectManagerHelper();
         // GET: Admin
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public ActionResult UserIndex()
         {
             var users = db.Users.Select(u => new UserProfileVM
@@ -34,6 +34,7 @@ namespace BugTracker.Controllers
         }
 
         //GET
+        [Authorize(Roles = "Admin, Project Manager")]
         public ActionResult ManageUserRole(string userId)
         {
             //How to load up drop down list with role info.
@@ -66,7 +67,8 @@ namespace BugTracker.Controllers
 
             return RedirectToAction("UserIndex");
         }
-            //GET
+        //GET
+        [Authorize(Roles = "Admin, Project Manager")]
         public ActionResult ManageRoles()
         {
             var users = db.Users.Select(u => new UserProfileVM
@@ -105,7 +107,8 @@ namespace BugTracker.Controllers
             }
             return RedirectToAction("ManageRoles");
         }
-
+        [Authorize(Roles = "Admin, Project Manager")]
+        //GET
         public ActionResult ManageUserProjects(string userId)
         {
             var myProjects = projectHelper.ListUserProjects(userId).Select(p => p.Id);
@@ -116,7 +119,7 @@ namespace BugTracker.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult ManageUserProjects(List<int>projects, string userId)
+        public ActionResult ManageUserProjects(List<int> projects, string userId)
         {
             foreach (var project in projectHelper.ListUserProjects(userId).ToList())
             {
@@ -164,7 +167,7 @@ namespace BugTracker.Controllers
                 }
             }
 
-            return RedirectToAction("Details", "Projects", new { id = projectId });
+            return RedirectToAction("Index", "Projects");
         }
         public ActionResult ManageUsers()
         {

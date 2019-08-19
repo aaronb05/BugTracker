@@ -2,11 +2,14 @@
 @using BugTracker.Helpers
 @model IEnumerable<UserProfileVM>
 
-@{ 
+@{
     var roleHelper = new UserRolesHelper();
+    var projectHelper = new ProjectManagerHelper();
 }
 
-<h2>UserIndex</h2>
+
+
+@Html.ActionLink("Back", "Dashboard", "Home")
 
 <table class="table">
     <tr>
@@ -19,41 +22,142 @@
         <th>
             Full Name
         </th>
-
         <th>
             @Html.DisplayName("Role")
         </th>
-        <th>
-            @Html.DisplayName("Projects")
-        </th>
+        @*<th>
+                @Html.DisplayName("Projects")
+            </th>*@
+        @if (User.IsInRole("Admin"))
+        {
+            <th>
+                Manage
+            </th>
+        }
     </tr>
 
-    @foreach(var user in Model)
+
+
+    @foreach (var user in Model)
     {
-     <tr>
-        <td class="avatar">
-            <img src="@user.AvatarUrl" class="img-responsive" />
-        </td>
-        <td>
-            @Html.DisplayFor(modelitem => user.Email)
-        </td>
-        <td>
-            @Html.DisplayFor(modelitem => user.FirstName)  @Html.DisplayFor(modelitem => user.LastName)
-        </td>
-        <td>
-             @roleHelper.ListUserRoles(user.Id).FirstOrDefault()
-        </td>
-         <td>
-
-         </td>
-        <td>
-            @Html.ActionLink("Manage Role", "ManageUserRole", "Admin", new { userId = user.Id }, null) |
-            @Html.ActionLink("Manage Projects", "ManageUserProjects", "Admin", new { userId = user.Id }, null) 
-        </td>
-     </tr>
+        <tr>
+            <td class="avatar">
+                <img src="@user.AvatarUrl" class="img-responsive" />
+            </td>
+            <td>
+                @Html.DisplayFor(modelitem => user.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelitem => user.FirstName)  @Html.DisplayFor(modelitem => user.LastName)
+            </td>
+            <td>
+                @roleHelper.ListUserRoles(user.Id).FirstOrDefault()
+            </td>
+            @if (User.IsInRole("Admin"))
+            {
+                <td>
+                    @Html.ActionLink("Manage Role", "ManageUserRole", "Admin", new { userId = user.Id }, null) |
+                    @Html.ActionLink("Manage Projects", "ManageUserProjects", "Admin", new { userId = user.Id }, null)
+                </td>
+            }
+        </tr>
     }
-
 </table>
 
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
+<link href="~/Content/select2.css" rel="stylesheet" />
+<link href="~/Content/datatables.css" rel="stylesheet" />
 
-@Html.ActionLink("Back", "Dashboard", "Home")
+<section class="body">
+
+            <!-- start table -->
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <a href="#" class="fa fa-caret-down"></a>
+                <a href="#" class="fa fa-times"></a>
+            </div>
+
+            <h2 class="panel-title">Default</h2>
+        </header>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="mb-md">
+                        <button id="addToTable" class="btn btn-primary">Add <i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                <thead>
+                    <tr>
+                        <th>@Html.DisplayName("Avatar")</th>
+                        <th>@Html.DisplayNameFor(model => model.Email)</th>
+                        <th>Full Name</th>
+                        <th>@Html.DisplayName("Role")</th>
+                        <th>@Html.DisplayName("Projects")</th>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <th>
+                                Manage
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                    <tr class="gradeX">
+                        <td class="avatar">
+                            <img src="@user.AvatarUrl" class="img-responsive" />
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelitem => user.Email)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelitem => user.FirstName)  @Html.DisplayFor(modelitem => user.LastName)
+                        </td>
+                        <td>
+                            @roleHelper.ListUserRoles(user.Id).FirstOrDefault()
+                        </td>
+                        <td>
+                            @projectHelper.ListUserProjects(user.Id).FirstOrDefault()
+                        </td>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <td>
+                                <a href="#" class="hidden on-editing save-row"><i class="fa fa-save"></i></a>
+                                <a href="#" class="hidden on-editing cancel-row"><i class="fa fa-times"></i></a>
+                                <a href="@Url.Action("ManageUserRole","Admin")" class="on-default edit-row"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                <a href="@Url.Action("ManageUserProjects","Admin")" class="on-default remove-row"><i class="fa fa-user-plus" aria-hidden="true"></i></a>
+                            </td>
+                        }
+                        </tr>
+                    }
+                    </tbody>
+            </table>
+        </div>
+    </section>
+ 
+        
+</section>
+
+   
+
+    <!-- Vendor -->
+
+
+    <!-- Specific Page Vendor -->
+   
+    <script src="~/Scripts/select2.js"></script>
+
+    <script src="~/Scripts/jquery.dataTables.js"></script>
+
+ 
+    <script src="~/Scripts/datatables.js"></script>
+
+    <!-- Examples -->
+
+    <script src="~/Scripts/examples.datatables.editable.js"></script>
+
+

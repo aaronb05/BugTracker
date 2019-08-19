@@ -3,57 +3,61 @@
 
 @model BugTracker.Models.Project
 
-    @{
-        ViewBag.Title = "Details";
+@{
+    ViewBag.Title = "Details";
 
-        var projectHelper = new ProjectManagerHelper();
-    }
+    var projectHelper = new ProjectManagerHelper();
+}
 
 
-    <div>
-        <h4>Project</h4>
-        <hr />
-        <dl class="dl-horizontal">
-            <dt>
-                @Html.DisplayNameFor(model => model.Name)
-            </dt>
-
-            <dd>
-                @Html.DisplayFor(model => model.Name)
-            </dd>
-
-            <dt>
-                @Html.DisplayNameFor(model => model.Description)
-            </dt>
-
-            <dd>
-                @Html.DisplayFor(model => model.Description)
-            </dd>
-
-            <dt>
-                @Html.DisplayNameFor(model => model.Created)
-            </dt>
-            <dd>
-                @Html.DisplayFor(model => model.Created)
-            </dd>
-
-        </dl>
-    </div>
-
+<div>
+    <h4>Project</h4>
     <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
 
-    @using (Html.BeginForm("ManageUserProjects", "Admin", FormMethod.Post))
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Created)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Created)
+        </dd>
+
+    </dl>
+</div>
+
+<hr />
+@if (User.IsInRole("Admin") || (User.IsInRole("Project Manager")))
+{
+    using (Html.BeginForm("ManageProjectUsers", "Admin", FormMethod.Post))
     {
         @Html.AntiForgeryToken()
         @Html.Hidden("ProjectId", Model.Id)
         <div class="row">
             <div class="col-md-4">
+                <h2>Project Managers</h2>
                 @Html.ListBox("ProjectManagers")
             </div>
             <div class="col-md-4">
+                <h2>Developers</h2>
                 @Html.ListBox("Developers")
             </div>
             <div class="col-md-4">
+                <h2>Submitters</h2>
                 @Html.ListBox("Submitters")
             </div>
         </div>
@@ -63,7 +67,7 @@
             </div>
         </div>
     }
-
+}
     <div class="row">
         <p>
             @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |

@@ -1,16 +1,22 @@
-﻿@{
+﻿@using BugTracker.Helpers
+@using BugTracker.Models
+
+@model IEnumerable<BugTracker.Models.Project>
+
+
+@{
     ViewBag.Title = "Manage User Projects";
+
+    var projectHelper = new ProjectManagerHelper();
 }
 
-@using (Html.BeginForm())
+@using (Html.BeginForm("ManageUserProjects", "Admin", FormMethod.Post))
 {
     @Html.AntiForgeryToken()
+    @*@Html.Hidden("User")*@
     <div class="row">
         <div class="col-md-offset-2 col-md-5">
-            @Html.ListBox("Projects", null@*htmlAttributes: new { @class = "form-control" }*@)
-        </div>
-        <div class="col-md-offset-1 col-md-3">
-            @Html.DropDownList("RoleName", null, "--Select Role--"@*, htmlAttributes: new { @class = "form-control"*@ @*}*@)
+            @Html.ListBox("Projects", null, htmlAttributes: new { @class = "form-control" })
         </div>
     </div>
 

@@ -64,10 +64,10 @@
     @Html.AntiForgeryToken()
     <div class="row">
         <div class="col-md-offset-2 col-md-5">
-            @Html.ListBox("Users", null @*htmlAttributes: new { @class = "form-control" }*@)
+            @Html.ListBox("Users", null, @htmlAttributes: new { @class = "form-control" })
         </div>
         <div class="col-md-offset-1 col-md-3">
-            @Html.DropDownList("RoleName", null, "--Select Role--"@*, htmlAttributes: new { @class = "form-control"*@ @*}*@)
+            @Html.DropDownList("RoleName", null, "--Select Role--", htmlAttributes: new { @class = "form-control" })
         </div>
     </div>
 

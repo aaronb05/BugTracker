@@ -351,3 +351,7 @@ MigrationBackup/
 *.config
 
 *Configuration.cs
+
+*Startup.Auth.cs
+
+
