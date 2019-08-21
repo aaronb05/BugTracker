@@ -212,6 +212,14 @@
     <Compile Include="ViewModels\UserProfileVM.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Attachments\doc.png" />
+    <Content Include="Attachments\docx.png" />
+    <Content Include="Attachments\other.png" />
+    <Content Include="Attachments\pdf.png" />
+    <Content Include="Attachments\xls.png" />
+    <Content Include="Attachments\xlsx.png" />
+    <Content Include="Attachments\xml.png" />
+    <Content Include="Attachments\zip.png" />
     <Content Include="Content\bootstrap-multiselect.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\datatables.css" />
@@ -314,7 +322,7 @@
     <Content Include="Views\Tickets\Delete.cshtml" />
     <Content Include="Views\Tickets\Details.cshtml" />
     <Content Include="Views\Tickets\Edit.cshtml" />
-    <Content Include="Views\Tickets\Index.cshtml" />
+    <Content Include="Views\Tickets\MyIndex.cshtml" />
     <Content Include="Views\Projects\Create.cshtml" />
     <Content Include="Views\Projects\Delete.cshtml" />
     <Content Include="Views\Projects\Details.cshtml" />
@@ -364,10 +372,10 @@
     <Content Include="Views\Tickets\Dashboard.cshtml" />
     <Content Include="Views\Home\UserProfile.cshtml" />
     <Content Include="Views\Home\DemoUser.cshtml" />
+    <Content Include="Views\Tickets\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Attachments\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />

@@ -40,17 +40,15 @@ namespace BugTracker.Helpers
         {
             
             var ticket = db.Tickets.Find(ticketId);
-            var flag = ticket.Project.Users.Any(u => u.Id == userId);
-
-            return (flag);
+            return ticket.AssignedToUserId == userId;
 
         }
 
-        public ICollection<Ticket> ListUserTickets(string userId)
+        public ICollection<ApplicationUser> ListUserTickets(int ticketId)
         {
-            ApplicationUser user = db.Users.Find(userId);
-
-            var tickets = user.Tickets.ToList();
+            HttpContext.Current.User.Identity.GetUserId();
+            Ticket ticket = db.Tickets.Find(ticketId);
+            var tickets = ticket.Project.Users.ToList();
 
             return tickets;
         }

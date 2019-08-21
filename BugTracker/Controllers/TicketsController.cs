@@ -29,7 +29,7 @@ namespace BugTracker.Controllers
             return View(tickets);
         }
 
-        [Authorize(Roles = "ProjectManager, Developer, Submitter")]
+        [Authorize(Roles = "Admin,ProjectManager, Developer, Submitter")]
         public ActionResult MyIndex()
         {
             //step 1: what role am i in?
@@ -52,6 +52,9 @@ namespace BugTracker.Controllers
                 case "ProjectManager":
                     myTickets = db.Users.Find(userId).Projects.SelectMany(t => t.Tickets).ToList();
                     break;
+                case "Admin":
+                    myTickets = db.Tickets.ToList();
+                    break;
             }
             return View("Index", myTickets);
         }
@@ -70,10 +73,27 @@ namespace BugTracker.Controllers
             }
 
             var allDevelopers = projectHelper.UsersOnProjectByRole(ticket.ProjectId, "Developer");
-         
             ViewBag.Developers = new SelectList(allDevelopers, "Id", "DisplayName");
 
+
             return View(ticket);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AssignDeveloper(List<string>Developers, int ticketId)
+        {
+            if (Developers != null)
+            {
+                foreach(var developerId in Developers)
+                {
+                    ticketHelper.AddUserToTicket(developerId, ticketId);
+                }
+                
+            }
+
+            return RedirectToAction("MyIndex", "Tickets", new { Id = ticketId });
+
         }
 
         // GET: Tickets/Create
@@ -136,28 +156,13 @@ namespace BugTracker.Controllers
                 return HttpNotFound();
             }
 
-            var allowed = false;
-            var userId = User.Identity.GetUserId();
-          
-            //based on role, can i edit ticket
-            if (User.IsInRole("Developer") && ticket.AssignedToUserId != userId)
-                allowed = true;
+           
 
-            else if (User.IsInRole("Submitter") && ticket.OwnerUserId == userId)
-                allowed = true;
-
-            else if (User.IsInRole("Project Manger"))
+            if (DecisionHelper.TicketIsEditableByUser(ticket))
             {
-               allowed = true;
-            }
-            else
-                    {
-                allowed = true;
-            }
-            if (allowed)
-            {
+                
                 ViewBag.AssignedToUserId = new SelectList(db.Users, "Id", "FirstName", ticket.AssignedToUserId);
-                ViewBag.OwnerUserId = new SelectList(db.Users, "Id", "FirstName", ticket.OwnerUserId);
+                ViewBag.OwnerUserId = new SelectList(db.Users, "Id", "FirstName" + "LastName", ticket.OwnerUserId);
                 ViewBag.ProjectId = new SelectList(db.Projects, "Id", "Name", ticket.ProjectId);
                 ViewBag.TicketPriorityId = new SelectList(db.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
                 ViewBag.TicketStatusId = new SelectList(db.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
@@ -177,12 +182,14 @@ namespace BugTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                var oldTicket = db.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == ticket.Id);
+                //var oldTicket = db.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == ticket.Id);
 
+                
+                ticket.Updated = DateTime.Now;
                 db.Entry(ticket).State = EntityState.Modified;
                 db.SaveChanges();
 
-                NotificationHelper.CreateAssignmentNotification(oldTicket, ticket);
+                //NotificationHelper.CreateAssignmentNotification(oldTicket, ticket);
 
                 return RedirectToAction("Index");
             }
@@ -234,7 +241,7 @@ namespace BugTracker.Controllers
         public ActionResult AssignTicket(int? id)
         {
             var ticket = db.Tickets.Find(id);
-            
+
             var allDevelopers = projectHelper.UsersOnProjectByRole(ticket.ProjectId, "Developer");
             ViewBag.Developers = new SelectList(allDevelopers, "Id", "DisplayName", ticket.AssignedToUserId);
 

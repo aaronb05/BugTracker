@@ -22,6 +22,7 @@ namespace BugTracker.Models
         public int TicketTypeId { get; set; }
         [Display(Name = "Ticket Priority")]
         public int TicketPriorityId { get; set; }
+        [Display(Name ="Ticket Status")]
         public int TicketStatusId { get; set; }
         [Display(Name = "Submitter")]
         public string OwnerUserId { get; set; }
@@ -29,13 +30,18 @@ namespace BugTracker.Models
         public string AssignedToUserId { get; set; }
 
 
-        
+        [Display(Name = "Project Name")]
         public virtual Project Project { get; set; }
+        [Display(Name = "Ticket Type")]
         public virtual TicketType TicketType { get; set; }
+        [Display(Name = "Ticket Priority")]
         public virtual TicketPriority TicketPriority { get; set; }
+        [Display(Name = "Ticket Status")]
         public virtual TicketStatus TicketStatus { get; set; }
+        [Display(Name = "Submitter")]
         public virtual ApplicationUser OwnerUser { get; set; }
-        public virtual ApplicationUser AssignedToUser { get; set; }
+        [Display(Name = "Developer")]
+        public virtual ApplicationUser AssignedToUser { get; set; } //is this user or userId?
 
         public virtual ICollection<TicketComment> TicketComments {get; set;}
         public virtual ICollection<TicketAttachment> TicketAttachment { get; set; }

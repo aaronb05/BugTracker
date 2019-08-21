@@ -94,6 +94,28 @@ namespace BugTracker.Controllers
             }
         }
 
+        //DEMO LOGIN
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+
+        public async Task<ActionResult> DemoLogin(string demoEmail)
+        {
+            var email = WebConfigurationManager.AppSettings[demoEmail];
+            var password = WebConfigurationManager.AppSettings["DemoUserPassword"];
+
+            var result = await SignInManager.PasswordSignInAsync(email, password, false, shouldLockout: false);
+            switch (result)
+            {
+                case SignInStatus.Success:
+                    return RedirectToAction("Dashboard", "Home");
+                case SignInStatus.Failure:
+                default:
+                    return RedirectToAction("Login", "Home");
+            }
+        }
+
         //
         // GET: /Account/VerifyCode
         [AllowAnonymous]
@@ -168,8 +190,8 @@ namespace BugTracker.Controllers
                 if (ImageHelpers.IsWebFriendlyImage(avatar))
                 {
                     var fileName = Path.GetFileName(avatar.FileName);
-                    avatar.SaveAs(Path.Combine(Server.MapPath("~/Avatars/"), fileName));
-                    user.AvatarUrl = "/Avatars/" + fileName;
+                    avatar.SaveAs(Path.Combine(Server.MapPath("~/Images/"), fileName));
+                    user.AvatarUrl = "/Images/" + fileName;
                 }
 
 

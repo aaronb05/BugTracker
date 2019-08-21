@@ -54,9 +54,12 @@ namespace BugTracker.Controllers
         {
             if (ModelState.IsValid)
             {
+                 
                 ticketComment.CommentBody = commentBody;
                 ticketComment.UserId = User.Identity.GetUserId();
                 ticketComment.Created = DateTime.Now;
+               
+
                 db.TicketComments.Add(ticketComment);
                 db.SaveChanges();
                 return RedirectToAction("Dashboard", "Tickets", new { Id = ticketId });
