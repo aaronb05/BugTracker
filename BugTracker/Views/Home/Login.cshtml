@@ -8,7 +8,7 @@
 <!doctype html>
 <html class="fixed">
 <head>
-
+    <title>Bug Tracker</title>
     @*Basic
         <meta charset="UTF-8">
 
@@ -17,12 +17,13 @@
         <meta name="author" content="okler.net">*@
 
     <!-- Mobile Metas -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link href="~/Images/favicon.ico" rel="shortcut icon"/>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <!-- Web Fonts  -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
-
+    
     <!-- Vendor CSS -->
     <link href="~/fonts/fontawesome-webfont.ttf" rel="stylesheet" />
     <link href="~/fonts/fontawesome-webfont.woff" rel="stylesheet" />
@@ -67,7 +68,7 @@
                     <div class="form-group mb-lg">
                         <div class="clearfix">
                             <label class="pull-left">Password</label>
-                            <a href="pages-recover-password.html" class="pull-right">Lost Password?</a>
+                            <a href="@Url.Action("ForgotPassword","Account")" class="pull-right">Lost Password?</a>
                         </div>
                         <div class="input-group input-group-icon">
                             <input name="Password" type="password" class="form-control input-lg" />
@@ -100,6 +101,9 @@
                 </div>
                 <p class="text-center">
                     Don't have an account yet? <a href="@Url.Action("Register","Home")">Sign Up!</a>
+                </p>
+                <p class="text-center">
+                    Or Click <a href="@Url.Action("DemoUser","Home")">here</a> to login with a demo user!
                 </p>
             </div>
         </div>

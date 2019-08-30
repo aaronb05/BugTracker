@@ -1,10 +1,15 @@
 ﻿@using BugTracker.Helpers
+@using Microsoft.AspNet.Identity
+@using BugTracker.Models
 
 @model BugTracker.Models.Ticket
 
 @{
+
     var count = Model.TicketComments.Count();
     //var word = count == 1 ? "comment" : "comments";
+    var historyHelper = new HistoryHelper();
+   
 }
 
 <div class="row">
@@ -34,24 +39,11 @@
                         </thead>
                         <tbody>
                             <tr class="gradeX">
-                                
-                                    <td>
-                                       
-
-                                    </td>
-                                
-                                <td>
-
-                                </td>
-                                <td>
-
-                                </td>
-                                <td>
-
-                                </td>
-                                <td>
-
-                                </td>
+                                <td>@Model.Project.Name</td>
+                                <td>@Model.TicketPriority.Name</td>
+                                <td>@Model.TicketType.Name</td>
+                                <td>@Model.TicketStatus.Name</td>
+                                <td>@Html.DisplayFor(model => model.AssignedToUser.FullName)</td>
                             </tr>
                         </tbody>
                     </table>
@@ -61,6 +53,7 @@
         </section>
     </div>
 </div>
+
 <div class="row">
     @* TICKET ATTACHMENTS *@
     <div class="col-md-4">
@@ -74,7 +67,7 @@
             </header>
             <section class="panel">
 
-                <div class="panel-body">
+                <div class="panel-body" style=" max-height:500px; overflow-y: scroll">
                     <div class="row">
                         <div class="col-md-12">
                             @using (Html.BeginForm("Create", "TicketAttachments", FormMethod.Post, new { enctype = "Multipart/form-Data" }))
@@ -103,6 +96,7 @@
                                 </div>
                             }
 
+                            <div class="row" style="padding-top:20px">
                             @foreach (var attachment in Model.TicketAttachment)
                             {
                                 <div class="row">
@@ -136,6 +130,7 @@
                                     </div>
                                 </div>
                             }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -151,34 +146,37 @@
                     <a href="#" class="fa fa-caret-down"></a>
                     <a href="#" class="fa fa-times"></a>
                 </div>
+                <span class="pull-left label label-default">@count</span>
                 <h4 class="panel-title text-center">Ticket Comments</h4>
             </header>
             <section class="panel">
 
-                <div class="panel-body">
+                <div class="panel-body" style=" max-height:500px; overflow-y: scroll">
 
-                    <div class="notification-title">
-                        <span class="pull-right label label-default">@count</span>
 
-                    </div>
+                    @*<div class="notification-title">
+                        <span class="pull-left label label-default">@count</span>
+
+                    </div>*@
 
                     <div class="content">
-                        <ul>
-                            @foreach (var ticketComments in Model.TicketComments.OrderByDescending(c => c.Created))
-                            {
+
+                        @foreach (var ticketComments in Model.TicketComments.OrderByDescending(c => c.Created))
+                        {
+                            <ul>
                                 <li>
-                                    <figure class="image">
-                                        <img src="@ticketComments.User.AvatarUrl" class="img-circle" />
+                                    <figure class="image clearfix">
+                                        <img src="@ticketComments.User.AvatarUrl" class="img-circle" height="50" width="50"/>
                                     </figure>
                                     <span class="title">@ticketComments.User.FirstName @ticketComments.User.LastName</span>
                                     <br />
                                     <span class="message" style="word-wrap:break-word">@ticketComments.CommentBody</span>
                                     <br />
                                     <a href="@Url.Action("Delete", "TicketComments", new { Id = ticketComments.Id })">Delete Comment</a>
-
                                 </li>
-                            }
-                        </ul>
+                            </ul>
+                        }
+
                     </div>
 
                     <hr />
@@ -216,8 +214,8 @@
                     </div>
                 </div>
             </section>
-            </section>
-</div>
+        </section>
+    </div>
 
     @* TICKET HISTORY *@
     <div class="col-md-4">
@@ -230,57 +228,28 @@
                 <h4 class="panel-title text-center">Ticket History</h4>
             </header>
             <section class="panel">
-                <div class="panel-body">
-
-
-
-                </div>
-            </section>
-        </section>
-</div>
-</div>
-
-
-
-<div class="row">
-    <div class="col-md-6">
-        <section class="panel panel-primary">
-            <header class="panel-heading">
-                <div class="panel-actions">
-                    <a href="#" class="fa fa-caret-down"></a>
-                    <a href="#" class="fa fa-times"></a>
-                </div>
-                <h4 class="panel-title text-center">Manage Developers</h4>
-            </header>
-            <section class="panel">
-                <div class="panel-body">
-                    <div>
-                        @using (Html.BeginForm("AssignDeveloper", "Tickets", FormMethod.Post))
-
-                        {
-                            @Html.AntiForgeryToken()
-                            @Html.Hidden("TicketId", Model.Id)
-                            <div class="row form-group-vertical">
-                                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-                                @Html.HiddenFor(model => model.Id)
-
-                                <div class="form-group">
-                                    <div class="col-md-10">
-                                        @Html.DropDownList("Developers", null, "--Select Role--", new { @class = "form-control" })
-                                        @Html.ValidationMessageFor(model => model.AssignedToUserId, "", new { @class = "text-danger" })
-                                    </div>
+                <div class="panel-body" style=" max-height:500px; overflow-y: scroll">
+                    <div class="timeline timeline-simple mt-xlg mb-md">
+                        <div class="tm-body">
+                            @foreach (var date in Model.TicketHistory.OrderByDescending(u => u.Updated).GroupBy(u => u.Updated.ToString("dd, MMM yyyy")))
+                            {
+                                <div class="tm-title">
+                                    <h3 class="h5 text-uppercase">@date.Key</h3>
                                 </div>
-                            </div>
-                            <div class="row" style="padding-top:10px">
-                                <div class="col-md-10">
-                                    <button class="btn btn-primary btn-sm" type="submit">Assign</button>
-                                </div>
-                            </div>
-
-                        }
-
-                        <div style=" padding-top:10px">
-                            @Html.ActionLink("Back", "Index")
+                                <ol class="tm-items">
+                                    @foreach (var history in Model.TicketHistory.OrderByDescending(u => u.Updated))
+                                    {
+                                        <li>
+                                            <div class="tm-box">
+                                                <p class="text-muted mb-none">@history.Updated.ToString("dd, MMM yyyy")</p>
+                                                <p>
+                                                    @history.User.FullName changed the @history.PropertyName from "@history.OldValue" to "@history.NewValue"
+                                                </p>
+                                            </div>
+                                        </li>
+                                    }
+                                </ol>
+                            }
                         </div>
                     </div>
                 </div>
@@ -289,4 +258,55 @@
     </div>
 </div>
 
+@* ASSIGN TICKET *@
+@if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
+{
+
+    <div class="row">
+        <div class="col-md-6">
+            <section class="panel panel-primary">
+                <header class="panel-heading">
+                    <div class="panel-actions">
+                        <a href="#" class="fa fa-caret-down"></a>
+                        <a href="#" class="fa fa-times"></a>
+                    </div>
+                    <h4 class="panel-title text-center">Manage Developers</h4>
+                </header>
+                <section class="panel">
+                    <div class="panel-body">
+                        <div>
+                            @using (Html.BeginForm("AssignDeveloper", "Tickets", FormMethod.Post))
+
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("TicketId", Model.Id)
+                                <div class="row form-group-vertical">
+                                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                    @Html.HiddenFor(model => model.Id)
+
+                                    <div class="form-group">
+                                        <div class="col-md-10">
+                                            @Html.DropDownList("Developers", null, "--Select Role--", new { @class = "form-control" })
+                                            @Html.ValidationMessageFor(model => model.AssignedToUserId, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row" style="padding-top:10px">
+                                    <div class="col-md-10">
+                                        <button class="btn btn-primary btn-sm" type="submit">Assign</button>
+                                    </div>
+                                </div>
+
+                            }
+
+                            <div style=" padding-top:10px">
+                                @Html.ActionLink("Back", "Index")
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </div>
+}
 

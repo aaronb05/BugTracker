@@ -58,6 +58,30 @@ namespace BugTracker.Models
         public string ConfirmPassword { get; set; }
     }
 
+    public class ChangeUserInfoVM
+    {
+        [Display(Name = "First Name")]
+        [MaxLength(40), MinLength(1)]
+        public string FirstName { get; set; }
+
+        [Display(Name = "First Name")]
+        [MaxLength(40), MinLength(1)]
+        public string NewFirstName { get; set; }
+
+        [Display(Name = "Last Name")]
+        [MaxLength(40), MinLength(1)]
+        public string LastName { get; set; }
+
+        [Display(Name = "First Name")]
+        [MaxLength(40), MinLength(1)]
+        public string NewLastName { get; set; }
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; }
+       
+        public string NewEmail { get; set; }
+    }
+
     public class AddPhoneNumberViewModel
     {
         [Required]

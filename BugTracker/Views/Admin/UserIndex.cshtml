@@ -7,101 +7,69 @@
     var projectHelper = new ProjectManagerHelper();
 }
 
-<link href="~/Content/select2.css" rel="stylesheet" />
-<link href="~/Content/datatables.css" rel="stylesheet" />
-
-@Html.ActionLink("Back", "Dashboard", "Home")
+    <link href="~/Content/myTable.css" rel="stylesheet" />
 
 
+<div class="row">
+    <div class="col-md-12 text-center text-bold">
+        <h2>User Index</h2>
+    </div>
+</div>
+    
+<table id="dtOrderExample" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+    <thead>
+        <tr>
 
+            <th>@Html.DisplayNameFor(model => model.Email)</th>
+            <th>Full Name</th>
+            <th>@Html.DisplayName("Role")</th>
+            <th>@Html.DisplayName("Projects")</th>
+            @if (User.IsInRole("Admin"))
+            {
+                <th>
+                    Manage
+                </th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr class="gradeX">
 
-
-<section class="body">
-
-    <!-- start table -->
-    <section class="panel">
-        <header class="panel-heading">
-            <div class="panel-actions">
-                <a href="#" class="fa fa-caret-down"></a>
-                <a href="#" class="fa fa-times"></a>
-            </div>
-
-            <h2 class="panel-title">User Index</h2>
-        </header>
-        <div class="panel-body">
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="mb-md">
-                        <button id="addToTable" class="btn btn-primary">Add <i class="fa fa-plus"></i></button>
-                    </div>
-                </div>
-            </div>
-            <table class="table table-bordered table-striped mb-none" id="datatable-editable">
-                <thead>
-                    <tr>
-                        <th>@Html.DisplayName("Avatar")</th>
-                        <th>@Html.DisplayNameFor(model => model.Email)</th>
-                        <th>Full Name</th>
-                        <th>@Html.DisplayName("Role")</th>
-                        <th>@Html.DisplayName("Projects")</th>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <th>
-                                Manage
-                            </th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model)
-                    {
-                        <tr class="gradeX">
-                            <td class="avatar">
-                                <img src="@user.AvatarUrl" class="img-responsive" />
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelitem => user.Email)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelitem => user.FirstName)  @Html.DisplayFor(modelitem => user.LastName)
-                            </td>
-                            <td>
-                                @roleHelper.ListUserRoles(user.Id).FirstOrDefault()
-                            </td>
-                            <td>
-                                @projectHelper.ListUserProjects(user.Id).Select(p => p.Name).FirstOrDefault()
-                            </td>
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <td>
-                                    <a href="@Url.Action("ManageUserRole", "Admin", new { userId = user.Id }, null)" class="on-default edit-row"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a> |
-                                    <a href="@Url.Action("ManageUserProjects","Admin", new { userId = user.Id }, null)" class="on-default edit-row"><i class="fa fa-user-plus" aria-hidden="true"></i></a>
-                                </td>
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-
-</section>
+                <td>
+                    @Html.DisplayFor(modelitem => user.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelitem => user.FirstName)  @Html.DisplayFor(modelitem => user.LastName)
+                </td>
+                <td>
+                    @roleHelper.ListUserRoles(user.Id).FirstOrDefault()
+                </td>
+                <td>
+                    @projectHelper.ListUserProjects(user.Id).Select(p => p.Name).FirstOrDefault()
+                </td>
+                @if (User.IsInRole("Admin"))
+                {
+                    <td>
+                        <a href="@Url.Action("ManageUserRole", "Admin", new { userId = user.Id }, null)" class="on-default edit-row"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a> |
+                        <a href="@Url.Action("ManageUserProjects","Admin", new { userId = user.Id }, null)" class="on-default edit-row"><i class="fa fa-suitcase" aria-hidden="true"></i></a>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+  
+<div class="row">
+    <div class="col-md-3">
+        @Html.ActionLink("Back", "Dashboard", "Home")
+    </div>
+</div>
 
 
 
-<!-- Vendor -->
-<!-- Specific Page Vendor -->
 
-<script src="~/Scripts/select2.js"></script>
-
-<script src="~/Scripts/jquery.dataTables.js"></script>
-
-
-<script src="~/Scripts/datatables.js"></script>
-
-<!-- Examples -->
-
-<script src="~/Scripts/examples.datatables.editable.js"></script>
+<script src="~/Scripts/myTable.js"></script>
 
 

@@ -105,9 +105,27 @@ namespace BugTracker.Helpers
             return ticketUsers;
         }
 
+        public string PriorityColor(string ticketPriority)
+        {
+            switch (ticketPriority)
+            {
+                case "Immediate":
+                    return "red";
+                case "High":
+                    return "orange";
+                case "Moderate":
+                    return "blue";
+                case "Low":
+                    return "purple";
+                case "None":
+                    return "black";
+                default:
+                    return "grey";
+                
 
-      
+            }
 
+        }
 
     }
 }

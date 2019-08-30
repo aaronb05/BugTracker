@@ -8,6 +8,8 @@ using System.Web;
 using System.Web.Mvc;
 using BugTracker.Models;
 using BugTracker.Helpers;
+using Microsoft.AspNet.Identity;
+
 namespace BugTracker.Controllers
 {
     public class ProjectsController : Controller
@@ -16,6 +18,7 @@ namespace BugTracker.Controllers
         private UserRolesHelper roleHelper = new UserRolesHelper();
         private ProjectManagerHelper projectHelper = new ProjectManagerHelper();
 
+        [Authorize(Roles = "Admin, Project Manager,Developer, Submitter")]
         // GET: Projects
         public ActionResult Index()
         {
@@ -37,15 +40,15 @@ namespace BugTracker.Controllers
             
             var allProjectManagers = roleHelper.UsersInRole("Project Manager");
             var currentProjectManagers = projectHelper.UsersInRoleOnProject(project.Id, "ProjectManager");
-            ViewBag.ProjectManagers = new MultiSelectList(allProjectManagers, "Id", "DisplayName", currentProjectManagers);
+            ViewBag.ProjectManagers = new MultiSelectList(allProjectManagers, "Id", "FullName", currentProjectManagers);
 
             var allSubmitters = roleHelper.UsersInRole("Submitter");
             var currentSubmitters = projectHelper.UsersInRoleOnProject(project.Id, "Submitters");
-            ViewBag.Submitters = new MultiSelectList(allSubmitters, "Id", "DisplayName", currentSubmitters);
+            ViewBag.Submitters = new MultiSelectList(allSubmitters, "Id", "FullName", currentSubmitters);
 
             var allDevelopers = roleHelper.UsersInRole("Developer");
             var currentDeveoplers= projectHelper.UsersInRoleOnProject(project.Id, "Developers");
-            ViewBag.Developers = new MultiSelectList(allDevelopers, "Id", "DisplayName", currentDeveoplers);
+            ViewBag.Developers = new MultiSelectList(allDevelopers, "Id", "FullName", currentDeveoplers);
 
             
 
@@ -53,6 +56,7 @@ namespace BugTracker.Controllers
         }
 
         // GET: Projects/Create
+        [Authorize(Roles = "Admin, Project Manager")]
         public ActionResult Create()
         {
             return View();
@@ -78,18 +82,27 @@ namespace BugTracker.Controllers
         }
 
         // GET: Projects/Edit/5
+        [Authorize(Roles = "Admin, Project Manager,Developer, Submitter")]
         public ActionResult Edit(int? id)
         {
+            var userId = User.Identity.GetUserId();
+
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Project project = db.Projects.Find(id);
+
             if (project == null)
             {
                 return HttpNotFound();
             }
-            return View(project);
+            if(DecisionHelper.ProjectIsEditableByUser(project))
+            {
+                return View(project);
+            }
+
+            return RedirectToAction("AccessViolation, Admin");
         }
 
         // POST: Projects/Edit/5
@@ -109,6 +122,7 @@ namespace BugTracker.Controllers
         }
 
         // GET: Projects/Delete/5
+        [Authorize(Roles = "Admin, Project Manager")]
         public ActionResult Delete(int? id)
         {
             if (id == null)

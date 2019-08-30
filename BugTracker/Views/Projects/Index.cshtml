@@ -53,19 +53,19 @@
     <td>
         @foreach (var user in projectHelper.UsersOnProjectByRole(item.Id, "Project Manager"))
         {
-            @user.FirstName @: @user.LastName
+            @user.FullName
         }
     </td>
     <td>
         @foreach (var user in projectHelper.UsersOnProjectByRole(item.Id, "Developer"))
         {
-            @user.FirstName @: @user.LastName
+            @user.FullName
         }
     </td>
     <td>
         @foreach (var user in projectHelper.UsersOnProjectByRole(item.Id, "Submitter"))
         {
-            @user.FirstName @: @user.LastName <br />
+            @user.FullName <br />
         }
     </td>
 

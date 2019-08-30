@@ -29,7 +29,7 @@ namespace BugTracker.Controllers
         {
             return View();
         }
-        //[Authorize]
+        [Authorize]
         //GET
         public ActionResult UserProfile()
         {
@@ -73,6 +73,8 @@ namespace BugTracker.Controllers
             return View();
         }
 
+
+        [AllowAnonymous]
         public ActionResult DemoUser()
         {
             return View();

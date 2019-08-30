@@ -8,9 +8,11 @@
     var user = db.Users.Find(userid);
     var ticketHelper = new TicketHelper();
     var projectHelper = new ProjectManagerHelper();
+    var notificationHelper = new NotificationHelper();
     var devticket = db.Tickets.Where(t => t.AssignedToUserId == userid).OrderByDescending(t => t.Created).Take(5).ToList();
     var subticket = db.Tickets.Where(t => t.OwnerUserId == userid).OrderByDescending(t => t.Created).Take(5).ToList();
-    
+    var myProjects = projectHelper.ListUserProjects(userid).ToList();
+    var managerTickets = myProjects.SelectMany(t => t.Tickets).Take(5).ToList();
 
 }
 
@@ -26,8 +28,9 @@
 
     <title>Bug Tracker</title>
     @*<meta name="keywords" content="HTML5 Admin Template" />
-    <meta name="description" content="JSOFT Admin - Responsive HTML5 Template">
-    <meta name="author" content="JSOFT.net">*@
+        <meta name="description" content="JSOFT Admin - Responsive HTML5 Template">
+        <meta name="author" content="JSOFT.net">*@
+    <link href="~/Images/favicon.ico" rel="shortcut icon"/>
 
     <!-- Mobile Metas -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -36,34 +39,34 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
 
     <!-- Vendor CSS -->
-    
     <link href="~/Content/bootstrap.css" rel="stylesheet" />
-    
+
     <link href="~/Content/font-awesome.css" rel="stylesheet" />
- 
+
     <link href="~/Content/magnific-popup.css" rel="stylesheet" />
-   
+
     <link href="~/Content/datepicker3.css" rel="stylesheet" />
 
     <!-- Specific Page Vendor CSS -->
-   
+
     <link href="~/Content/jquery-ui-1.10.4.custom.css" rel="stylesheet" />
-    
+
     <link href="~/Content/bootstrap-multiselect.css" rel="stylesheet" />
-   
+
     <link href="~/Content/morris.css" rel="stylesheet" />
+ 
 
     <!-- Theme CSS -->
-    
+
     <link href="~/Content/theme.css" rel="stylesheet" />
     <!-- Skin CSS -->
-    
+
     <link href="~/Content/default.css" rel="stylesheet" />
     <!-- Theme Custom CSS -->
-  
+
     <link href="~/Content/theme-custom.css" rel="stylesheet" />
     <!-- Head Libs -->
-    <
+    
     <script src="~/Content/modernizr.js"></script>
 </head>
 <body>
@@ -72,8 +75,10 @@
         <!-- start: header -->
         <header class="header">
             <div class="logo-container">
-                
-                <div class="visible-xs toggle-sidebar-left" data-toggle-class="sidebar-left-opened" data-target="html" data-fire-event="sidebar-left-opened">
+                @*<div class="logo">
+                    <img src="~/Images/BetterLogo.png" height="60" />
+                </div>*@
+                <div class="visible-xs toggle-sidebar-left" data-toggle-class="sidebar-left-opened" data-target="html" data-fire-event="sidebar-left-toggle">
                     <i class="fa fa-bars" aria-label="Toggle sidebar"></i>
                 </div>
             </div>
@@ -82,65 +87,58 @@
             <div class="header-right">
 
                 @*<form action="pages-search-results.html" class="search nav-form">
-                    <div class="input-group input-search">
-                        <input type="text" class="form-control" name="q" id="q" placeholder="Search...">
-                        <span class="input-group-btn">
-                            <button class="btn btn-default" type="submit"><i class="fa fa-search"></i></button>
-                        </span>
-                    </div>
-                </form>*@
+                        <div class="input-group input-search">
+                            <input type="text" class="form-control" name="q" id="q" placeholder="Search...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="submit"><i class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </form>*@
 
                 <span class="separator"></span>
 
                 <ul class="notifications">
-                   
+
                     <li>
                         <a href="#" class="dropdown-toggle notification-icon" data-toggle="dropdown">
                             <i class="fa fa-bell"></i>
-                            <span class="badge">3</span>
+                            @if (notificationHelper.GetNewUserNotificationCount() != 0)
+                            {
+                                <span class="badge">@notificationHelper.GetNewUserNotificationCount()</span>
+                            }
                         </a>
 
                         <div class="dropdown-menu notification-menu">
                             <div class="notification-title">
-                                <span class="pull-right label label-default">3</span>
-                                Alerts
+                                Notifications<span class="label label-default">@notificationHelper.GetAllUserNotificationCount()</span>
                             </div>
 
                             <div class="content">
                                 <ul>
-                                    <li>
-                                        <a href="#" class="clearfix">
-                                            <div class="image">
-                                                <i class="fa fa-thumbs-down bg-danger"></i>
-                                            </div>
-                                            <span class="title">Server is Down!</span>
-                                            <span class="message">Just now</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="clearfix">
-                                            <div class="image">
-                                                <i class="fa fa-lock bg-warning"></i>
-                                            </div>
-                                            <span class="title">User Locked</span>
-                                            <span class="message">15 minutes ago</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="clearfix">
-                                            <div class="image">
-                                                <i class="fa fa-signal bg-success"></i>
-                                            </div>
-                                            <span class="title">Connection Restaured</span>
-                                            <span class="message">10/10/2014</span>
-                                        </a>
-                                    </li>
+                                    @foreach (var notification in notificationHelper.GetUnreadUserNotifications().OrderByDescending(n => n.Created).Take(5))
+                                    {
+                                        <li>
+                                            @using (Html.BeginForm("MarkAsRead", "TicketNotifications"))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                @Html.Hidden("Id", notification.Id)
+                                                <a href="#" class="clearfix">
+                                                    <div class="img-circle">
+                                                        @*@notification.Sender.AvatarUrl*@
+                                                    </div>
+                                                    <span class="title">@notification.Subject</span>
+                                                    <span class="message">@notification.NotificationBody</span>
+                                                </a>
+                                                <button type="submit" class="btn btn-primary btn-xs">Read</button>
+                                            }
+                                        </li>
+                                    }
                                 </ul>
 
                                 <hr />
 
                                 <div class="text-right">
-                                    <a href="#" class="view-more">View All</a>
+                                    <a href="@Url.Action("MyNotifications","TicketNotifications")" class="view-more">View All</a>
                                 </div>
                             </div>
                         </div>
@@ -152,10 +150,10 @@
                 <div id="userbox" class="userbox">
                     <a href="#" data-toggle="dropdown">
                         <figure class="profile-picture">
-                            <img src="@user.AvatarUrl"/>
+                            <img src="@user.AvatarUrl" class="img-circle"/>
                         </figure>
-                        <div class="profile-info" data-lock-name="John Doe" data-lock-email="">
-                            <span class="name">@user.DisplayName</span>
+                        <div class="profile-info">
+                            <span class="name">@user.FullName</span>
                             <span class="role">@user.Email</span>
                         </div>
 
@@ -191,7 +189,7 @@
             <aside id="sidebar-left" class="sidebar-left">
 
                 <div class="sidebar-header">
-                    
+
                     <div class="sidebar-toggle hidden-xs" data-toggle-class="sidebar-left-collapsed" data-target="html" data-fire-event="sidebar-left-toggle">
                         <i class="fa fa-bars" aria-label="Toggle sidebar"></i>
                     </div>
@@ -211,22 +209,24 @@
                                 {
                                     <li class="nav-parent ">
                                         <a>
-                                            <i class="fa fa-briefcase" aria-hidden="true"></i>
+                                            <i class="fa fa-tasks" aria-hidden="true"></i>
                                             <span>Administration</span>
                                         </a>
                                         <ul class="nav nav-children">
                                             <li>
-                                                <a href="@Url.Action("UserIndex", "Admin")">User Index</a>
+                                                <a href="@Url.Action("UserIndex", "Admin")">Manage Users</a>
                                             </li>
                                         </ul>
                                         <ul class="nav nav-children">
                                             <li>
-                                                <a href="@Url.Action("Index", "Projects")">Project Index</a>
+                                                
+                                                <a href="@Url.Action("Index", "Projects")">Projects</a>
                                             </li>
                                         </ul>
                                         <ul class="nav nav-children">
                                             <li>
-                                                <a href="@Url.Action("Index", "Tickets")">Ticket Index</a>
+                                                
+                                                <a href="@Url.Action("Index", "Tickets")">Tickets</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -236,16 +236,40 @@
                                 {
                                     <li class="nav-parent">
                                         <a>
+                                            <i class="fa fa-briefcase" aria-hidden="true"></i>
                                             <span>Projects</span>
                                         </a>
-                                        <ul class="nav nav-children">
-                                            <li>
-                                                <a href="@Url.Action("Index", "Projects")">Project1</a>
-                                            </li>
-                                        </ul>
+                                        @foreach (var project in myProjects)
+                                        {
+                                            <ul class="nav nav-children">
+                                                <li>
+                                                    <a href="@Url.Action("Index", "Projects")">@project.Name</a>
+                                                </li>
+                                            </ul>
+                                        }
+
                                         <ul class="nav nav-children">
                                             <li>
                                                 <a href="@Url.Action("Index", "Projects")">View All Projects</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-bug" aria-hidden="true"></i>
+                                            <span>Tickets</span>
+                                        </a>
+                                        @foreach (var ticket in managerTickets)
+                                        {
+                                            <ul class="nav nav-children">
+                                                <li>
+                                                    <a href="@Url.Action("Index", "Projects")">@ticket.Title</a>
+                                                </li>
+                                            </ul>
+                                        }
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="@Url.Action("MyIndex", "Tickets")">View All Tickets</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -254,81 +278,94 @@
                                 {
                                     <li class="nav-parent">
                                         <a>
+                                            <i class="fa fa-bug" aria-hidden="true"></i>
                                             <span>My Tickets</span>
                                         </a>
 
-                                        @foreach (var item in devticket)
+                                        @foreach (var ticket in devticket)
                                         {
                                             <ul class="nav nav-children">
-                                                <li class="nav-parent">
-                                                    <a href="">@item.Title</a>
+                                                <li>
+                                                    <a href="@Url.Action("Dashboard","Tickets", new {Id = ticket.Id} )">@ticket.Title</a>
                                                 </li>
                                             </ul>
                                         }
                                     </li>
-                                    <li class="nav-parent">
-                                        <a href="@Url.Action("MyIndex","Tickets")"> View All Tickets </a>
+
+                                    <li class="nav nav-children">
+                                        <a href="@Url.Action("MyIndex","Tickets")">
+                                            <i class="fa fa-inbox" aria-hidden="true"></i>
+                                            <span>View All Tickets</span>
+                                        </a>
                                     </li>
 
                                 }
 
                                 @if (User.IsInRole("Submitter"))
                                 {
-
-                                    foreach (var item in subticket)
-                                    {
-                                        <li class="nav-parent">
-                                            <a>
-                                                <span>My Tickets</span>
-                                            </a>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-bug" aria-hidden="true"></i>
+                                            <span>My Tickets</span>
+                                        </a>
+                                        @foreach (var ticket in subticket)
+                                        {
                                             <ul class="nav nav-children">
                                                 <li>
-                                                    <a href="">@item.Title</a>
+                                                    <a href="">
+                                                        <span>@ticket.Title</span>
+                                                    </a>
                                                 </li>
                                             </ul>
-                                        </li>
-                                    }
-                                    <li>
-                                        <a href="@Url.Action("MyIndex","Tickets")"> View All Tickets </a>
+                                        }
                                     </li>
                                     <li>
-                                        <a href="@Url.Action("Create","Tickets")">Create A Ticket</a>
+                                        <a href="@Url.Action("MyIndex","Tickets")">
+                                            <i class="fa fa-inbox" aria-hidden="true"></i>
+                                            <span>View All Tickets</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="@Url.Action("Create","Tickets")">
+                                            <i class="fa fa-plus" aria-hidden="true"></i>
+                                            <span>Create A Ticket</span>
+                                        </a>
                                     </li>
                                 }
 
-                                @*<li class="nav-parent">
-        <a>
-            <i class="fa fa-align-left" aria-hidden="true"></i>
-            <span>Menu Levels</span>
-        </a>
-        <ul class="nav nav-children">
-            <li>
-                <a>First Level</a>
-            </li>
-            <li class="nav-parent">
-                <a>Second Level</a>
-                <ul class="nav nav-children">
-                    <li class="nav-parent">
-                        <a>Third Level</a>
-                        <ul class="nav nav-children">
-                            <li>
-                                <a>Third Level Link #1</a>
-                            </li>
-                            <li>
-                                <a>Third Level Link #2</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a>Second Level Link #1</a>
-                    </li>
-                    <li>
-                        <a>Second Level Link #2</a>
-                    </li>
-                </ul>
-            </li>
-        </ul>*@
-                                @*</li>*@
+                                <li class="nav-parent">
+                                    <a>
+                                        <i class="fa fa-align-left" aria-hidden="true"></i>
+                                        <span>Menu Levels</span>
+                                    </a>
+                                    <ul class="nav nav-children">
+                                        <li>
+                                            <a>First Level</a>
+                                        </li>
+                                        <li class="nav-parent">
+                                            <a>Second Level</a>
+                                            <ul class="nav nav-children">
+                                                <li class="nav-parent">
+                                                    <a>Third Level</a>
+                                                    <ul class="nav nav-children">
+                                                        <li>
+                                                            <a>Third Level Link #1</a>
+                                                        </li>
+                                                        <li>
+                                                            <a>Third Level Link #2</a>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                                <li>
+                                                    <a>Second Level Link #1</a>
+                                                </li>
+                                                <li>
+                                                    <a>Second Level Link #2</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
 
                             </ul>
                         </nav>
@@ -336,58 +373,58 @@
                         <hr class="separator" />
 
                         @*<div class="sidebar-widget widget-tasks">
-                            <div class="widget-header">
-                                <h6>Projects</h6>
-                                <div class="widget-toggle">+</div>
+                                <div class="widget-header">
+                                    <h6>Projects</h6>
+                                    <div class="widget-toggle">+</div>
+                                </div>
+                                <div class="widget-content">
+                                    <ul class="list-unstyled m-none">
+                                        <li><a href="#">JSOFT HTML5 Template</a></li>
+                                        <li><a href="#">Tucson Template</a></li>
+                                        <li><a href="#">JSOFT Admin</a></li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="widget-content">
-                                <ul class="list-unstyled m-none">
-                                    <li><a href="#">JSOFT HTML5 Template</a></li>
-                                    <li><a href="#">Tucson Template</a></li>
-                                    <li><a href="#">JSOFT Admin</a></li>
-                                </ul>
-                            </div>
-                        </div>
 
-                        <hr class="separator" />
+                            <hr class="separator" />
 
-                        <div class="sidebar-widget widget-stats">
-                            <div class="widget-header">
-                                <h6>Company Stats</h6>
-                                <div class="widget-toggle">+</div>
-                            </div>
-                            <div class="widget-content">
-                                <ul>
-                                    <li>
-                                        <span class="stats-title">Stat 1</span>
-                                        <span class="stats-complete">85%</span>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-primary progress-without-number" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" style="width: 85%;">
-                                                <span class="sr-only">85% Complete</span>
+                            <div class="sidebar-widget widget-stats">
+                                <div class="widget-header">
+                                    <h6>Company Stats</h6>
+                                    <div class="widget-toggle">+</div>
+                                </div>
+                                <div class="widget-content">
+                                    <ul>
+                                        <li>
+                                            <span class="stats-title">Stat 1</span>
+                                            <span class="stats-complete">85%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-primary progress-without-number" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" style="width: 85%;">
+                                                    <span class="sr-only">85% Complete</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <span class="stats-title">Stat 2</span>
-                                        <span class="stats-complete">70%</span>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-primary progress-without-number" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 70%;">
-                                                <span class="sr-only">70% Complete</span>
+                                        </li>
+                                        <li>
+                                            <span class="stats-title">Stat 2</span>
+                                            <span class="stats-complete">70%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-primary progress-without-number" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 70%;">
+                                                    <span class="sr-only">70% Complete</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <span class="stats-title">Stat 3</span>
-                                        <span class="stats-complete">2%</span>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-primary progress-without-number" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100" style="width: 2%;">
-                                                <span class="sr-only">2% Complete</span>
+                                        </li>
+                                        <li>
+                                            <span class="stats-title">Stat 3</span>
+                                            <span class="stats-complete">2%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-primary progress-without-number" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100" style="width: 2%;">
+                                                    <span class="sr-only">2% Complete</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>*@
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>*@
                     </div>
 
                 </div>
@@ -398,14 +435,6 @@
                 @RenderBody()
             </section>
         </div>
-
-
-        
-       
-
-        
-
-
 
         <aside id="sidebar-right" class="sidebar-right">
             <div class="nano">
@@ -524,8 +553,11 @@
 
     <!-- Examples -->
     <script src="~/Scripts/examples.dashboard.js"></script>
+    <script src="~/Scripts/select2.js"></script>
 
-        @RenderSection("scripts", required: false)
+    
+
+    @RenderSection("scripts", required: false)
 
 </body>
 </html>

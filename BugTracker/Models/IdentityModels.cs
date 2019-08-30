@@ -16,6 +16,15 @@ namespace BugTracker.Models
         public string DisplayName { get; set; }
         public string AvatarUrl { get; set; }
 
+        public string FullName
+        {
+            get
+            {
+                return $"{FirstName} {LastName}";
+            }
+
+        }
+
         //nav
 
         public virtual ICollection<Project>Projects { get; set; }

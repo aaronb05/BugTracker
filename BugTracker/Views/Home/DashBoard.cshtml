@@ -1,420 +1,363 @@
-﻿
+﻿@using BugTracker.Models
+@using Microsoft.AspNet.Identity
+@using BugTracker.Helpers
 
-    <header class="page-header">
-        <h2>Dashboard</h2>
+@{
+    var userId = User.Identity.GetUserId();
+    var db = new ApplicationDbContext();
+    var user = db.Users.Find(userId);
+    var roleHelper = new UserRolesHelper();
+    var ticketHelper = new TicketHelper();
+    var projectHelper = new ProjectManagerHelper();
+    var notificationHelper = new NotificationHelper();
+    var devticket = db.Tickets.Where(t => t.AssignedToUserId == userId).OrderByDescending(t => t.Created).Take(5).ToList();
+    var subticket = db.Tickets.Where(t => t.OwnerUserId == userId).OrderByDescending(t => t.Created).Take(5).ToList();
+    var adminTicket = db.Tickets.OrderByDescending(t => t.Created).Take(5).ToList();
+    var myProjects = projectHelper.ListUserProjects(userId).ToList();
+    var projManagerTicket = myProjects.SelectMany(t => t.Tickets).Take(5).ToList();
+}
 
-        <div class="right-wrapper pull-right">
-            <ol class="breadcrumbs">
-                <li>
-                    <a href="index.html">
-                        <i class="fa fa-home"></i>
-                    </a>
-                </li>
-                <li><span>Dashboard</span></li>
-            </ol>
+<header class="page-header">
+    <h2>Dashboard</h2>
 
-            <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
-        </div>
-    </header>
-
-    <div class="row">
-        <div class="col-md-6">
-            
-        </div>
-        <div class="col-md-6">
-           
-        </div>
+    <div class="right-wrapper pull-right">
+        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
     </div>
+</header>
 
+<div class="row">
+    <div class="col-md-6">
+
+    </div>
+    <div class="col-md-6">
+
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xl-3 col-lg-6">
+        <section class="panel panel-transparent">
+            
+            <div class="panel-body">
+                <section class="panel panel-group">
+                    <header class="panel-heading bg-primary">
+
+                        <div class="widget-profile-info">
+                            <div class="profile-picture">
+                                <img src="@user.AvatarUrl">
+                            </div>
+                            <div class="profile-info">
+                                <h4 class="name text-semibold">@user.FullName</h4>
+                                <h5 class="role">@roleHelper.ListUserRoles(userId).FirstOrDefault()</h5>
+                                <div class="profile-footer">
+                                    <a href="@Url.Action("UserProfile","Home")">edit profile</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </header>
+                    <div id="accordion">
+                        <div class="panel panel-accordion panel-accordion-first">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse1One">
+                                        <i class="fa fa-check"></i> Recent Tickets
+                                    </a>
+                                </h4>
+                            </div>
+
+                            @* TO DO LIST *@
+                            <div id="collapse1One" class="accordion-body collapse in">
+                                <div class="panel-body">
+                                    <ul class="widget-todo-list">
+                                        @if (User.IsInRole("Developer"))
+                                        {
+                                            foreach (var ticket in devticket)
+                                            {
+                                                <li>
+                                                    <div class="checkbox-custom checkbox-default">
+                                                        <input type="checkbox" id="todoListItem1" class="todo-check">
+                                                        <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
+                                                    </div>
+                                                    <div class="todo-actions">
+                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
+                                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i></a> |
+                                                        
+                                                    </div>
+                                                </li>
+                                            }
+                                        }
+                                        @if (User.IsInRole("Submitter"))
+                                        {
+                                            foreach (var ticket in subticket)
+                                            {
+                                                <li>
+                                                    <div class="checkbox-custom checkbox-default">
+                                                        <input type="checkbox" id="todoListItem1" class="todo-check">
+                                                        <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
+                                                    </div>
+                                                    <div class="todo-actions">
+                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
+                                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                        </a> |
+                                                        
+                                                    </div>
+                                                </li>
+                                            }
+                                        }
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            foreach (var ticket in adminTicket)
+                                            {
+                                                <li>
+                                                    <div class="checkbox-custom checkbox-default">
+                                                        <input type="checkbox" id="todoListItem2" class="todo-check">
+                                                        <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
+                                                    </div>
+                                                    <div class="todo-actions">
+                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
+                                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                        </a> |
+                                                        <a class="todo-remove" href="@Url.Action("Delete","Tickets",  new { id = ticket.Id })">
+                                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                                        </a>
+                                                    </div>
+                                                </li>
+                                            }
+                                        }
+                                        @if (User.IsInRole("Project Manager"))
+                                        {
+                                            foreach (var ticket in projManagerTicket)
+                                            {
+                                                <li>
+                                                    <div class="checkbox-custom checkbox-default">
+                                                        <input type="checkbox" id="todoListItem2" class="todo-check">
+                                                        <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
+                                                    </div>
+                                                    <div class="todo-actions">
+                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
+                                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                        </a> |
+                                                        <a class="todo-remove" href="@Url.Action("Delete","Tickets")">
+                                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                                        </a>
+                                                    </div>
+                                                </li>
+                                            }
+                                        }
+                                    </ul>
+
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <div>
+                                    <a href="@Url.Action("MyIndex","Tickets")">View All Tickets</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-accordion">
+
+                            @* MESSAGES *@
+                            <div id="collapse1Two" class="accordion-body collapse">
+                                <div class="panel-body">
+                                    <ul class="simple-user-list mb-xlg">
+                                        <li>
+                                            <figure class="image rounded">
+                                                <img src="assets/images/!sample-user.jpg" alt="Joseph Doe Junior" class="img-circle">
+                                            </figure>
+                                            <span class="title">Joseph Doe Junior</span>
+                                            <span class="message">Lorem ipsum dolor sit.</span>
+                                        </li>
+                                        <li>
+                                            <figure class="image rounded">
+                                                <img src="assets/images/!sample-user.jpg" alt="Joseph Junior" class="img-circle">
+                                            </figure>
+                                            <span class="title">Joseph Junior</span>
+                                            <span class="message">Lorem ipsum dolor sit.</span>
+                                        </li>
+                                        <li>
+                                            <figure class="image rounded">
+                                                <img src="assets/images/!sample-user.jpg" alt="Joe Junior" class="img-circle">
+                                            </figure>
+                                            <span class="title">Joe Junior</span>
+                                            <span class="message">Lorem ipsum dolor sit.</span>
+                                        </li>
+                                        <li>
+                                            <figure class="image rounded">
+                                                <img src="assets/images/!sample-user.jpg" alt="Joseph Doe Junior" class="img-circle">
+                                            </figure>
+                                            <span class="title">Joseph Doe Junior</span>
+                                            <span class="message">Lorem ipsum dolor sit.</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </section>
+    </div>
+    <div class="col-xl-3 col-lg-6">
+
+        @* DATA CHARTS *@
+        <section class="panel panel-primary">
+            <header class="panel-heading">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
+
+                <h2 class="panel-title">My Stats</h2>
+            </header>
+            <div class="panel-body">
+                <section class="panel">
+                    <div class="panel-body">
+                        <div class="row" style="padding-bottom:15px">
+                            <div class="col-md-6">
+                                <a href="@Url.Action("Index","Projects")" class="h4  mb-none">Total Projects</a>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="h4 text-bold mb-none pull-right">@db.Projects.Count()</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="panel">
+                    <div class="panel-body">
+                        <div class="row" style="padding-bottom:15px">
+                            <div class="col-md-6">
+                                <a href="@Url.Action("MyIndex","Tickets")" class="h4  mb-none">Tickets In Progress</a>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketStatus.Name == "In Progress").Count()</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="panel">
+                    <div class="panel-body">
+                        <div class="row" style="padding-bottom:15px">
+                            <div class="col-md-6">
+                                <a href="@Url.Action("MyIndex","Tickets")" class="h4  mb-none">Immediate Tickets</a>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketPriority.Name == "Immediate").Count()</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="panel">
+                    <div class="panel-body">
+                        <div class="row" style="padding-bottom:15px">
+                            <div class="col-md-6">
+                                <a href="@Url.Action("MyIndex","Tickets")" class="h4  mb-none">Unassigned Tickets</a>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketStatus.Name == "New/Unassigned").Count()</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+    </div>
+    <div class="col-xl-6 col-lg-12">
+
+        @* ACTIVITY *@
+        <section class="panel">
+            <header class="panel-heading panel-heading-transparent">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
+
+                <h2 class="panel-title">Company Activity</h2>
+            </header>
+            <div class="panel-body">
+                <div class="timeline timeline-simple mt-xlg mb-md">
+                    <div class="tm-body">
+                        <div class="tm-title">
+                            <h3 class="h5 text-uppercase">November 2013</h3>
+                        </div>
+                        <ol class="tm-items">
+                            <li>
+                                <div class="tm-box">
+                                    <p class="text-muted mb-none">7 months ago.</p>
+                                    <p>
+                                        It's awesome when we find a good solution for our projects, JSOFT Admin is <span class="text-primary">#awesome</span>
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="tm-box">
+                                    <p class="text-muted mb-none">7 months ago.</p>
+                                    <p>
+                                        Checkout! How cool is that!
+                                    </p>
+                                    <div class="thumbnail-gallery">
+                                        <a class="img-thumbnail lightbox" href="assets/images/projects/project-4.jpg" data-plugin-options='{ "type":"image" }'>
+                                            <img class="img-responsive" width="215" src="assets/images/projects/project-4.jpg">
+                                            <span class="zoom">
+                                                <i class="fa fa-search"></i>
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+<div class="row">
    
 
+    @if (User.IsInRole("Project Manager") || User.IsInRole("Developer") || User.IsInRole("Submitter"))
+    {
+    <div class="col-lg-6 col-md-12">
+        <section class="panel panel-primary">
+            <header class="panel-heading">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
 
-
-    <div class="row">
-        <div class="col-xl-3 col-lg-6">
-            <section class="panel panel-transparent">
-                <header class="panel-heading">
-                    <div class="panel-actions">
-                        <a href="#" class="fa fa-caret-down"></a>
-                        <a href="#" class="fa fa-times"></a>
-                    </div>
-
-                    <h2 class="panel-title">My Profile</h2>
-                </header>
-                <div class="panel-body">
-                    <section class="panel panel-group">
-                        <header class="panel-heading bg-primary">
-
-                            <div class="widget-profile-info">
-                                <div class="profile-picture">
-                                    <img src="assets/images/!logged-user.jpg">
-                                </div>
-                                <div class="profile-info">
-                                    <h4 class="name text-semibold">John Doe</h4>
-                                    <h5 class="role">Administrator</h5>
-                                    <div class="profile-footer">
-                                        <a href="@Url.Action("Index","Manage")">(edit profile)</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </header>
-                        <div id="accordion">
-                            <div class="panel panel-accordion panel-accordion-first">
-                                <div class="panel-heading">
-                                    <h4 class="panel-title">
-                                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse1One">
-                                            <i class="fa fa-check"></i> Tasks
-                                        </a>
-                                    </h4>
-                                </div>
-
-                                @* TO DO LIST *@
-                                <div id="collapse1One" class="accordion-body collapse in">
-                                    <div class="panel-body">
-                                        <ul class="widget-todo-list">
-                                            <li>
-                                                <div class="checkbox-custom checkbox-default">
-                                                    <input type="checkbox" checked="" id="todoListItem1" class="todo-check">
-                                                    <label class="todo-label" for="todoListItem1"><span>Lorem ipsum dolor sit amet</span></label>
-                                                </div>
-                                                <div class="todo-actions">
-                                                    <a class="todo-remove" href="#">
-                                                        <i class="fa fa-times"></i>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="checkbox-custom checkbox-default">
-                                                    <input type="checkbox" id="todoListItem2" class="todo-check">
-                                                    <label class="todo-label" for="todoListItem2"><span>Lorem ipsum dolor sit amet</span></label>
-                                                </div>
-                                                <div class="todo-actions">
-                                                    <a class="todo-remove" href="#">
-                                                        <i class="fa fa-times"></i>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="checkbox-custom checkbox-default">
-                                                    <input type="checkbox" id="todoListItem3" class="todo-check">
-                                                    <label class="todo-label" for="todoListItem3"><span>Lorem ipsum dolor sit amet</span></label>
-                                                </div>
-                                                <div class="todo-actions">
-                                                    <a class="todo-remove" href="#">
-                                                        <i class="fa fa-times"></i>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="checkbox-custom checkbox-default">
-                                                    <input type="checkbox" id="todoListItem4" class="todo-check">
-                                                    <label class="todo-label" for="todoListItem4"><span>Lorem ipsum dolor sit amet</span></label>
-                                                </div>
-                                                <div class="todo-actions">
-                                                    <a class="todo-remove" href="#">
-                                                        <i class="fa fa-times"></i>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="checkbox-custom checkbox-default">
-                                                    <input type="checkbox" id="todoListItem5" class="todo-check">
-                                                    <label class="todo-label" for="todoListItem5"><span>Lorem ipsum dolor sit amet</span></label>
-                                                </div>
-                                                <div class="todo-actions">
-                                                    <a class="todo-remove" href="#">
-                                                        <i class="fa fa-times"></i>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="checkbox-custom checkbox-default">
-                                                    <input type="checkbox" id="todoListItem6" class="todo-check">
-                                                    <label class="todo-label" for="todoListItem6"><span>Lorem ipsum dolor sit amet</span></label>
-                                                </div>
-                                                <div class="todo-actions">
-                                                    <a class="todo-remove" href="#">
-                                                        <i class="fa fa-times"></i>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="panel panel-accordion">
+                <h2 class="panel-title">My Projects</h2>
+            </header>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-none">
+                        <thead>
+                            <tr>
                                 
-                                @* MESSAGES *@
-                                <div id="collapse1Two" class="accordion-body collapse">
-                                    <div class="panel-body">
-                                        <ul class="simple-user-list mb-xlg">
-                                            <li>
-                                                <figure class="image rounded">
-                                                    <img src="assets/images/!sample-user.jpg" alt="Joseph Doe Junior" class="img-circle">
-                                                </figure>
-                                                <span class="title">Joseph Doe Junior</span>
-                                                <span class="message">Lorem ipsum dolor sit.</span>
-                                            </li>
-                                            <li>
-                                                <figure class="image rounded">
-                                                    <img src="assets/images/!sample-user.jpg" alt="Joseph Junior" class="img-circle">
-                                                </figure>
-                                                <span class="title">Joseph Junior</span>
-                                                <span class="message">Lorem ipsum dolor sit.</span>
-                                            </li>
-                                            <li>
-                                                <figure class="image rounded">
-                                                    <img src="assets/images/!sample-user.jpg" alt="Joe Junior" class="img-circle">
-                                                </figure>
-                                                <span class="title">Joe Junior</span>
-                                                <span class="message">Lorem ipsum dolor sit.</span>
-                                            </li>
-                                            <li>
-                                                <figure class="image rounded">
-                                                    <img src="assets/images/!sample-user.jpg" alt="Joseph Doe Junior" class="img-circle">
-                                                </figure>
-                                                <span class="title">Joseph Doe Junior</span>
-                                                <span class="message">Lorem ipsum dolor sit.</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                                <th>Project</th>
+                                <th>Description</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var project in myProjects)
+                            {
+                                <tr>
 
+                                    <td>@project.Name</td>
+                                    <td><span>@project.Description</span></td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
                 </div>
-            </section>
-        </div>
-        <div class="col-xl-3 col-lg-6">
-
-            @* DATA CHARTS *@
-            <section class="panel panel-transparent">
-                <header class="panel-heading">
-                    <div class="panel-actions">
-                        <a href="#" class="fa fa-caret-down"></a>
-                        <a href="#" class="fa fa-times"></a>
-                    </div>
-
-                    <h2 class="panel-title">My Stats</h2>
-                </header>
-                <div class="panel-body">
-                    <section class="panel">
-                        <div class="panel-body">
-                            <div class="small-chart pull-right" id="sparklineBarDash"></div>
-                            <script type="text/javascript">
-                                            var sparklineBarDashData = [5, 6, 7, 2, 0, 4, 2, 4, 2, 0, 4, 2, 4, 2, 0, 4];
-                            </script>
-                            <div class="h4 text-bold mb-none">488</div>
-                            <p class="text-xs text-muted mb-none">Average Profile Visits</p>
-                        </div>
-                    </section>
-                    <section class="panel">
-                        <div class="panel-body">
-                            <div class="circular-bar circular-bar-xs m-none mt-xs mr-md pull-right">
-                                <div class="circular-bar-chart" data-percent="45" data-plugin-options='{ "barColor": "#2baab1", "delay": 300, "size": 50, "lineWidth": 4 }'>
-                                    <strong>Average</strong>
-                                    <label><span class="percent">45</span>%</label>
-                                </div>
-                            </div>
-                            <div class="h4 text-bold mb-none">12</div>
-                            <p class="text-xs text-muted mb-none">Working Projects</p>
-                        </div>
-                    </section>
-                    <section class="panel">
-                        <div class="panel-body">
-                            <div class="small-chart pull-right" id="sparklineLineDash"></div>
-                            <script type="text/javascript">
-                                            var sparklineLineDashData = [15, 16, 17, 19, 10, 15, 13, 12, 12, 14, 16, 17];
-                            </script>
-                            <div class="h4 text-bold mb-none">89</div>
-                            <p class="text-xs text-muted mb-none">Pending Tasks</p>
-                        </div>
-                    </section>
-                </div>
-            </section>
-            
-        </div>
-        <div class="col-xl-6 col-lg-12">
-
-            @* ACTIVITY *@
-            <section class="panel">
-                <header class="panel-heading panel-heading-transparent">
-                    <div class="panel-actions">
-                        <a href="#" class="fa fa-caret-down"></a>
-                        <a href="#" class="fa fa-times"></a>
-                    </div>
-
-                    <h2 class="panel-title">Company Activity</h2>
-                </header>
-                <div class="panel-body">
-                    <div class="timeline timeline-simple mt-xlg mb-md">
-                        <div class="tm-body">
-                            <div class="tm-title">
-                                <h3 class="h5 text-uppercase">November 2013</h3>
-                            </div>
-                            <ol class="tm-items">
-                                <li>
-                                    <div class="tm-box">
-                                        <p class="text-muted mb-none">7 months ago.</p>
-                                        <p>
-                                            It's awesome when we find a good solution for our projects, JSOFT Admin is <span class="text-primary">#awesome</span>
-                                        </p>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="tm-box">
-                                        <p class="text-muted mb-none">7 months ago.</p>
-                                        <p>
-                                            Checkout! How cool is that!
-                                        </p>
-                                        <div class="thumbnail-gallery">
-                                            <a class="img-thumbnail lightbox" href="assets/images/projects/project-4.jpg" data-plugin-options='{ "type":"image" }'>
-                                                <img class="img-responsive" width="215" src="assets/images/projects/project-4.jpg">
-                                                <span class="zoom">
-                                                    <i class="fa fa-search"></i>
-                                                </span>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
+            </div>
+        </section>
     </div>
-    <div class="row">
-        <div class="col-lg-6 col-md-12">
-            <section class="panel panel-transparent">
-                <header class="panel-heading">
-                    <div class="panel-actions">
-                        <a href="#" class="fa fa-caret-down"></a>
-                        <a href="#" class="fa fa-times"></a>
-                    </div>
-
-                    <h2 class="panel-title">Global Stats</h2>
-                </header>
-                @*<div class="panel-body">
-                    <div id="vectorMapWorld" style="height: 350px; width: 100%;"></div>
-                </div>*@
-            </section>
-        </div>
-        <div class="col-lg-6 col-md-12">
-            <section class="panel">
-                <header class="panel-heading panel-heading-transparent">
-                    <div class="panel-actions">
-                        <a href="#" class="fa fa-caret-down"></a>
-                        <a href="#" class="fa fa-times"></a>
-                    </div>
-
-                    <h2 class="panel-title">Projects Stats</h2>
-                </header>
-                <div class="panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-none">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Project</th>
-                                    <th>Status</th>
-                                    <th>Progress</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>JSOFT - Responsive HTML5 Template</td>
-                                    <td><span class="label label-success">Success</span></td>
-                                    <td>
-                                        <div class="progress progress-sm progress-half-rounded m-none mt-xs light">
-                                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
-                                                100%
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>JSOFT - Responsive Drupal 7 Theme</td>
-                                    <td><span class="label label-success">Success</span></td>
-                                    <td>
-                                        <div class="progress progress-sm progress-half-rounded m-none mt-xs light">
-                                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
-                                                100%
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>Tucson - Responsive HTML5 Template</td>
-                                    <td><span class="label label-warning">Warning</span></td>
-                                    <td>
-                                        <div class="progress progress-sm progress-half-rounded m-none mt-xs light">
-                                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
-                                                60%
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td>Tucson - Responsive Business WordPress Theme</td>
-                                    <td><span class="label label-success">Success</span></td>
-                                    <td>
-                                        <div class="progress progress-sm progress-half-rounded m-none mt-xs light">
-                                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 90%;">
-                                                90%
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>5</td>
-                                    <td>JSOFT - Responsive Admin HTML5 Template</td>
-                                    <td><span class="label label-warning">Warning</span></td>
-                                    <td>
-                                        <div class="progress progress-sm progress-half-rounded m-none mt-xs light">
-                                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 45%;">
-                                                45%
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>6</td>
-                                    <td>JSOFT - Responsive HTML5 Template</td>
-                                    <td><span class="label label-danger">Danger</span></td>
-                                    <td>
-                                        <div class="progress progress-sm progress-half-rounded m-none mt-xs light">
-                                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 40%;">
-                                                40%
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>7</td>
-                                    <td>JSOFT - Responsive Drupal 7 Theme</td>
-                                    <td><span class="label label-success">Success</span></td>
-                                    <td>
-                                        <div class="progress progress-sm progress-half-rounded mt-xs light">
-                                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 95%;">
-                                                95%
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
-    <!-- end: page -->
-
+    }
+</div>
+<!-- end: page -->

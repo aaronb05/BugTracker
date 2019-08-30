@@ -230,19 +230,62 @@ namespace BugTracker.Controllers
             {
                 return View(model);
             }
-            var result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+            var userId = User.Identity.GetUserId();
+            var result = await UserManager.ChangePasswordAsync(userId, model.OldPassword, model.NewPassword);
             if (result.Succeeded)
             {
                 var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
                 if (user != null)
                 {
+
                     await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                 }
-                return RedirectToAction("Index", new { Message = ManageMessageId.ChangePasswordSuccess });
+                return RedirectToAction("UserProfile", "Home");
             }
             AddErrors(result);
             return View(model);
         }
+
+        //CHANGE PERSONAL INFO
+
+        //GET
+        public ActionResult ChangeInfo()
+        {
+            var user = UserManager.FindById(User.Identity.GetUserId());
+            var model = new ChangeUserInfoVM()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email
+
+            };
+
+            return View(model);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+
+        public async Task<ActionResult> ChangeInfo(ChangeUserInfoVM model)
+        {
+            var user = UserManager.FindById(User.Identity.GetUserId());
+
+            if (ModelState.IsValid)
+            {
+                if (user != null)
+                {
+                    user.FirstName = model.NewFirstName;
+                    user.LastName = model.NewLastName;
+                    user.Email = model.NewEmail;
+                    user.UserName = model.NewEmail;
+                    await UserManager.UpdateAsync(user);
+                    
+                }
+                
+            }
+            return RedirectToAction("UserProfile", "Home");
+
+        }
+       
 
         //
         // GET: /Manage/SetPassword

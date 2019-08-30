@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using BugTracker.Models;
+using Microsoft.AspNet.Identity;
 
 namespace BugTracker.Controllers
 {
@@ -20,6 +21,8 @@ namespace BugTracker.Controllers
             var ticketNotifications = db.TicketNotifications.Include(t => t.Recipient).Include(t => t.Sender).Include(t => t.Ticket);
             return View(ticketNotifications.ToList());
         }
+
+       
 
         // GET: TicketNotifications/Details/5
         public ActionResult Details(int? id)
@@ -63,6 +66,24 @@ namespace BugTracker.Controllers
             ViewBag.SenderId = new SelectList(db.Users, "Id", "FirstName", ticketNotification.SenderId);
             ViewBag.TicketId = new SelectList(db.Tickets, "Id", "Title", ticketNotification.TicketId);
             return View(ticketNotification);
+        }
+
+        //GET
+        public ActionResult MyNotifications()
+        {
+            var userId = User.Identity.GetUserId();
+            return View("Index", db.TicketNotifications.Where(t => t.RecipientId == userId).ToList());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult MarkAsRead(int Id)
+        {
+            var notification = db.TicketNotifications.Find(Id);
+            notification.Read = true;
+            db.SaveChanges();
+
+            return RedirectToAction("DashBoard", "Home");
         }
 
         // GET: TicketNotifications/Edit/5

@@ -95,5 +95,13 @@ namespace BugTracker.Helpers
             return projectUsers;
 
         }
+
+        //public ICollection<Project> AllProjects(Project projects)
+        //{
+            
+
+
+
+        //}
     }
 }

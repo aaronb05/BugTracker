@@ -1,15 +1,14 @@
-﻿using System;
+﻿using BugTracker.Helpers;
+using BugTracker.Models;
+using Microsoft.AspNet.Identity;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using BugTracker.Helpers;
-using BugTracker.Models;
-using Microsoft.AspNet.Identity;
 
 namespace BugTracker.Controllers
 {
@@ -20,16 +19,17 @@ namespace BugTracker.Controllers
         private ProjectManagerHelper projectHelper = new ProjectManagerHelper();
         private TicketHelper ticketHelper = new TicketHelper();
         private NotificationHelper notificationHelper = new NotificationHelper();
+        
 
         // GET: Tickets
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public ActionResult Index()
         {
             var tickets = db.Tickets.ToList();
             return View(tickets);
         }
 
-        [Authorize(Roles = "Admin,ProjectManager, Developer, Submitter")]
+        [Authorize(Roles = "Admin,Project Manager, Developer, Submitter")]
         public ActionResult MyIndex()
         {
             //step 1: what role am i in?
@@ -44,12 +44,10 @@ namespace BugTracker.Controllers
                 case "Developer":
                     myTickets = db.Tickets.Where(t => t.AssignedToUserId == userId).ToList();
                     break;
-
                 case "Submitter":
                     myTickets = db.Tickets.Where(t => t.OwnerUserId == userId).ToList();
                     break;
-
-                case "ProjectManager":
+                case "Project Manager":
                     myTickets = db.Users.Find(userId).Projects.SelectMany(t => t.Tickets).ToList();
                     break;
                 case "Admin":
@@ -60,6 +58,8 @@ namespace BugTracker.Controllers
         }
 
         // GET: Tickets/Details/5
+        [Authorize(Roles = "Admin,Project Manager, Developer, Submitter")]
+
         public ActionResult Dashboard(int? id)
         {
             if (id == null)
@@ -81,8 +81,11 @@ namespace BugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult AssignDeveloper(List<string>Developers, int ticketId)
+        public ActionResult AssignDeveloper(List<string>Developers, int ticketId, Ticket ticket)
         {
+            var oldTicket = db.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == ticket.Id);
+            
+
             if (Developers != null)
             {
                 foreach(var developerId in Developers)
@@ -92,12 +95,22 @@ namespace BugTracker.Controllers
                 
             }
 
+            NotificationHelper.CreateAssignmentNotification(oldTicket, ticket);
+
             return RedirectToAction("MyIndex", "Tickets", new { Id = ticketId });
 
         }
 
+        public ActionResult RemoveDeveloperFromTicket(string userId, int ticketId)
+        { 
+            ticketHelper.RemoveUserFromTicket(userId, ticketId);
+
+            return RedirectToAction("MyIndex", "Tickets");
+
+        }
+
         // GET: Tickets/Create
-        //[Authorize(Roles = "Submitter")]
+        [Authorize(Roles = "Submitter")]
         public ActionResult Create()
         {
             var myProjects = projectHelper.ListUserProjects(User.Identity.GetUserId());
@@ -114,7 +127,7 @@ namespace BugTracker.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Title,Description,ProjectId,TicketTypeId,TicketPriorityId")] Ticket ticket)
+        public ActionResult Create([Bind(Include = "Title,Description,ProjectId,TicketTypeId,TicketPriorityId")] Ticket ticket, int projectId)
         {
             if (ModelState.IsValid)
             {
@@ -124,11 +137,13 @@ namespace BugTracker.Controllers
                     ticket.TicketStatusId = db.TicketStatuses.FirstOrDefault(t => t.Name == "New/UnAssigned").Id;
                     ticket.Created = DateTime.Now;
                     ticket.OwnerUserId = User.Identity.GetUserId();
+                   
                 }
-                
+
                 db.Tickets.Add(ticket);
                 db.SaveChanges();
-                return RedirectToAction("Index");
+
+                return RedirectToAction("MyIndex");
             }
 
             ViewBag.AssignedToUserId = new SelectList(db.Users, "Id", "FirstName", ticket.AssignedToUserId);
@@ -156,8 +171,6 @@ namespace BugTracker.Controllers
                 return HttpNotFound();
             }
 
-           
-
             if (DecisionHelper.TicketIsEditableByUser(ticket))
             {
                 
@@ -182,14 +195,18 @@ namespace BugTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                //var oldTicket = db.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == ticket.Id);
+                var oldTicket = db.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == ticket.Id);
 
-                
+
                 ticket.Updated = DateTime.Now;
                 db.Entry(ticket).State = EntityState.Modified;
                 db.SaveChanges();
 
-                //NotificationHelper.CreateAssignmentNotification(oldTicket, ticket);
+                
+                notificationHelper.ManageNotifications(oldTicket, ticket);
+
+                var historyHelper = new HistoryHelper();
+                historyHelper.RecordHistory(oldTicket, ticket);
 
                 return RedirectToAction("Index");
             }
@@ -203,6 +220,7 @@ namespace BugTracker.Controllers
         }
 
         // GET: Tickets/Delete/5
+        [Authorize(Roles = "Admin,Project Manager, Developer, Submitter")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -238,6 +256,7 @@ namespace BugTracker.Controllers
         }
 
         //GET
+        [Authorize(Roles = "Admin,Project Manager")]
         public ActionResult AssignTicket(int? id)
         {
             var ticket = db.Tickets.Find(id);

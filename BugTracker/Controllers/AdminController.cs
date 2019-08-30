@@ -113,7 +113,7 @@ namespace BugTracker.Controllers
         {
             var myProjects = projectHelper.ListUserProjects(userId).Select(p => p.Id);
            
-            ViewBag.Projects = new MultiSelectList(db.Projects.ToList(), "Id", "Name", myProjects);
+            ViewBag.Projects = new MultiSelectList(db.Projects, "Id", "Name", myProjects);
 
             return View();
         }
@@ -134,7 +134,7 @@ namespace BugTracker.Controllers
                 }
             }
             
-            return RedirectToAction("ManageUserProjects");
+            return RedirectToAction("UserIndex");
         }
 
         [HttpPost]

@@ -32,6 +32,35 @@ namespace BugTracker.Helpers
             }
             return true;
         }
+
+        public static bool ProjectIsEditableByUser(Project project)
+        {
+            var userId = HttpContext.Current.User.Identity.GetUserId();
+            var myRole = roleHelper.ListUserRoles(userId).FirstOrDefault();
+
+            switch (myRole)
+            {
+                case "Developer":
+                    return false;
+                case "Submitter":
+                    return false;
+                case "Project Manager":
+                    var listMyProjects = projectHelper.ListUserProjects(userId);
+                    foreach (var myProject in listMyProjects)
+                    {
+                        if (myProject.Id == project.Id)
+                            return true;
+                       
+                    }
+                    return false;
+                case "Admin":
+                    return true;
+                default:
+                    return false;
+
+            }
+
+        }
         public static bool TicketIsEditableByUser(Ticket ticket)
         {
 

@@ -12,6 +12,7 @@ using BugTracker.Models;
 using System.Web.Configuration;
 using BugTracker.Helpers;
 using System.IO;
+using BugTracker.ViewModels;
 
 namespace BugTracker.Controllers
 {
@@ -20,7 +21,7 @@ namespace BugTracker.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
-
+        private ApplicationDbContext db = new ApplicationDbContext();
         public AccountController()
         {
         }
@@ -182,7 +183,7 @@ namespace BugTracker.Controllers
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    DisplayName = model.DisplayName,
+                    UserName = model.Email,
                     AvatarUrl = WebConfigurationManager.AppSettings["DefaultAvatar"] 
 
                 };
@@ -212,7 +213,7 @@ namespace BugTracker.Controllers
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return RedirectToAction("Register","Home");
         }
 
         //
@@ -228,7 +229,28 @@ namespace BugTracker.Controllers
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
-        //
+        //CHANGE AVATAR
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangeAvatar(HttpPostedFileBase avatar, UserProfileVM model)
+        {
+            var user = db.Users.Find(model.Id);
+
+
+            if (ImageHelpers.IsWebFriendlyImage(avatar))
+            {
+                var fileName = Path.GetFileName(avatar.FileName);
+
+                avatar.SaveAs(Path.Combine(Server.MapPath("~/Images/"), fileName));
+                user.AvatarUrl = "/Images/" + fileName;
+            }
+
+            db.SaveChanges();
+            return RedirectToAction("UserProfile", "Home");
+        }
+
+
+
         // GET: /Account/ForgotPassword
         [AllowAnonymous]
         public ActionResult ForgotPassword()
@@ -291,16 +313,16 @@ namespace BugTracker.Controllers
             {
                 return View(model);
             }
-            var user = await UserManager.FindByNameAsync(model.Email);
+            var user = UserManager.Users.Select(u => u.Id).FirstOrDefault();
             if (user == null)
             {
                 // Don't reveal that the user does not exist
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
-            var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
+            var result = await UserManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
-                return RedirectToAction("ResetPasswordConfirmation", "Account");
+                return RedirectToAction("UserProfile", "Home", new { id = User.Identity });
             }
             AddErrors(result);
             return View();

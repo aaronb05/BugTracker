@@ -185,7 +185,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\CommonHelper.cs" />
     <Compile Include="Helpers\DecisionHelper.cs" />
     <Compile Include="Helpers\ImageHelpers.cs" />
     <Compile Include="Helpers\NotificationHelper.cs" />
@@ -193,6 +192,7 @@
     <Compile Include="Helpers\TicketHelper.cs" />
     <Compile Include="Helpers\HistoryHelper.cs" />
     <Compile Include="Helpers\UserRolesHelper.cs" />
+    <Compile Include="Helpers\Utilities.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\TicketAttachment.cs" />
@@ -230,18 +230,21 @@
     <Content Include="Content\magnific-popup.css" />
     <Content Include="Content\modernizr.js" />
     <Content Include="Content\morris.css" />
+    <Content Include="Content\myTable.css" />
     <Content Include="Content\select2.css" />
     <Content Include="Content\theme-custom.css" />
     <Content Include="Content\theme.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <Content Include="Images\BetterLogo.png" />
     <Content Include="Images\default_avatar.jpg" />
     <Content Include="Images\favicon.ico" />
     <Content Include="Images\user-img-background.jpg" />
     <Content Include="fonts\fontawesome-webfont.woff" />
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="private.config" />
+    <None Include="Properties\PublishProfiles\BoylesBugTracker - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
     <Content Include="Scripts\bootstrap-multiselect.js" />
@@ -277,6 +280,7 @@
     <Content Include="Scripts\liquid.meter.js" />
     <Content Include="Scripts\magnific-popup.js" />
     <Content Include="Scripts\morris.js" />
+    <Content Include="Scripts\myTable.js" />
     <Content Include="Scripts\nanoscroller.js" />
     <Content Include="Scripts\raphael.js" />
     <Content Include="Scripts\select2.js" />

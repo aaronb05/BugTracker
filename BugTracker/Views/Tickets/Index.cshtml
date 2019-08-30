@@ -1,14 +1,22 @@
-﻿@model IEnumerable<BugTracker.Models.Ticket>
+﻿@using BugTracker.Models
+@using BugTracker.Helpers
+
+
+@model IEnumerable<BugTracker.Models.Ticket>
 
 @{
-    ViewBag.Title = "Index";
+    var ticketHelper = new TicketHelper();
 }
 
 <h2>Index</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
+@if(User.IsInRole("Submitter"))
+{ 
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+}
+
 <table class="table">
     <tr>
         <th>
@@ -45,16 +53,17 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.AssignedToUser.DisplayName)
+                @Html.DisplayFor(modelItem => item.AssignedToUser.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.OwnerUser.DisplayName)
+                @Html.DisplayFor(modelItem => item.OwnerUser.FullName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Project.Name)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TicketPriority.Name)
+            <td style="color:@ticketHelper.PriorityColor(@item.TicketPriority.Name)">
+                
+                    @item.TicketPriority.Name
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.TicketStatus.Name)
