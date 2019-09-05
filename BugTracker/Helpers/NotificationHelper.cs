@@ -92,7 +92,7 @@ namespace BugTracker.Helpers
 
                 if (oldValue != newValue)
                 {
-                    //messageBody.AppendLine(new String('-', 45));
+                    
                     messageBody.AppendLine($"A change was made to Property: {property}.");
                     messageBody.AppendLine($"The old value was: {oldValue.ToString()}");
                     messageBody.AppendLine($"The new value is: {newValue.ToString()}");
@@ -128,15 +128,14 @@ namespace BugTracker.Helpers
         //    var newProjTickets = newProj.Tickets.Count();
 
         //    var noChange = (oldProjTickets <= newProjTickets);
-        //    var addittion = (oldProjTickets > newProjTickets);
-
+        //    var addittion = (oldProjTickets < newProjTickets);
 
         //    if (noChange)
         //        return;
 
         //    if (addittion)
         //    {
-        //       GenerateNewTicketNotification(oldProj, newProj);
+        //        GenerateNewTicketNotification(oldProj, newProj);
         //    }
         //}
 
@@ -145,7 +144,6 @@ namespace BugTracker.Helpers
         //{
         //    var projectId = oldProj.Id;
         //    var projectManager = projectHelper.UsersInRoleOnProject(projectId, "Project Manager").FirstOrDefault();
-            
 
         //    var notification = new TicketNotification
         //    {

@@ -17,6 +17,7 @@
     var projManagerTicket = myProjects.SelectMany(t => t.Tickets).Take(5).ToList();
 }
 
+
 <header class="page-header">
     <h2>Dashboard</h2>
 
@@ -35,10 +36,10 @@
 </div>
 
 
-<div class="row">
+<div class="row" style="margin-top:25px">
     <div class="col-xl-3 col-lg-6">
         <section class="panel panel-transparent">
-            
+
             <div class="panel-body">
                 <section class="panel panel-group">
                     <header class="panel-heading bg-primary">
@@ -51,7 +52,7 @@
                                 <h4 class="name text-semibold">@user.FullName</h4>
                                 <h5 class="role">@roleHelper.ListUserRoles(userId).FirstOrDefault()</h5>
                                 <div class="profile-footer">
-                                    <a href="@Url.Action("UserProfile","Home")">edit profile</a>
+                                    <a href="@Url.Action("UserProfile", "Home")">edit profile</a>
                                 </div>
                             </div>
                         </div>
@@ -81,9 +82,10 @@
                                                         <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
                                                     </div>
                                                     <div class="todo-actions">
-                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
-                                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i></a> |
-                                                        
+                                                        <a href="@Url.Action("Dashboard", "Tickets", new { id = ticket.Id })">
+                                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                        </a> |
+
                                                     </div>
                                                 </li>
                                             }
@@ -98,10 +100,10 @@
                                                         <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
                                                     </div>
                                                     <div class="todo-actions">
-                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
+                                                        <a href="@Url.Action("Dashboard", "Tickets", new { id = ticket.Id })">
                                                             <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                                         </a> |
-                                                        
+
                                                     </div>
                                                 </li>
                                             }
@@ -116,10 +118,10 @@
                                                         <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
                                                     </div>
                                                     <div class="todo-actions">
-                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
+                                                        <a href="@Url.Action("Dashboard", "Tickets", new { id = ticket.Id })">
                                                             <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                                         </a> |
-                                                        <a class="todo-remove" href="@Url.Action("Delete","Tickets",  new { id = ticket.Id })">
+                                                        <a class="todo-remove" href="@Url.Action("Delete", "Tickets", new { id = ticket.Id })">
                                                             <i class="fa fa-trash-o" aria-hidden="true"></i>
                                                         </a>
                                                     </div>
@@ -136,10 +138,10 @@
                                                         <label class="todo-label" for="todoListItem1"><span>@ticket.Title</span></label>
                                                     </div>
                                                     <div class="todo-actions">
-                                                        <a href="@Url.Action("Dashboard","Tickets", new { id = ticket.Id })">
+                                                        <a href="@Url.Action("Dashboard", "Tickets", new { id = ticket.Id })">
                                                             <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                                         </a> |
-                                                        <a class="todo-remove" href="@Url.Action("Delete","Tickets")">
+                                                        <a class="todo-remove" href="@Url.Action("Delete", "Tickets")">
                                                             <i class="fa fa-trash-o" aria-hidden="true"></i>
                                                         </a>
                                                     </div>
@@ -152,7 +154,7 @@
                             </div>
                             <div class="panel-footer">
                                 <div>
-                                    <a href="@Url.Action("MyIndex","Tickets")">View All Tickets</a>
+                                    <a href="@Url.Action("MyIndex", "Tickets")">View All Tickets</a>
                                 </div>
                             </div>
                         </div>
@@ -212,16 +214,26 @@
 
                 <h2 class="panel-title">My Stats</h2>
             </header>
+
             <div class="panel-body">
                 <section class="panel">
                     <div class="panel-body">
                         <div class="row" style="padding-bottom:15px">
                             <div class="col-md-6">
-                                <a href="@Url.Action("Index","Projects")" class="h4  mb-none">Total Projects</a>
+                                <a href="@Url.Action("Index", "Projects")" class="h4  mb-none">Total Projects</a>
                             </div>
-                            <div class="col-md-6">
-                                <p class="h4 text-bold mb-none pull-right">@db.Projects.Count()</p>
-                            </div>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@db.Projects.Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Project Manager") || User.IsInRole("Developer") || User.IsInRole("Submitter"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@myProjects.Count()</p>
+                                </div>
+                            }
                         </div>
                     </div>
                 </section>
@@ -229,11 +241,32 @@
                     <div class="panel-body">
                         <div class="row" style="padding-bottom:15px">
                             <div class="col-md-6">
-                                <a href="@Url.Action("MyIndex","Tickets")" class="h4  mb-none">Tickets In Progress</a>
+                                <a href="@Url.Action("MyIndex", "Tickets")" class="h4  mb-none">Tickets In Progress</a>
                             </div>
-                            <div class="col-md-6">
-                                <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketStatus.Name == "In Progress").Count()</p>
-                            </div>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketStatus.Name == "In Progress").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Project Manager"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@projManagerTicket.Where(t => t.TicketStatus.Name == "In Progress").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Developer"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@devticket.Where(t => t.TicketStatus.Name == "In Progress").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Submitter"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@subticket.Where(t => t.TicketStatus.Name == "In Progress").Count()</p>
+                                </div>
+                            }
                         </div>
                     </div>
                 </section>
@@ -243,9 +276,31 @@
                             <div class="col-md-6">
                                 <a href="@Url.Action("MyIndex","Tickets")" class="h4  mb-none">Immediate Tickets</a>
                             </div>
-                            <div class="col-md-6">
-                                <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketPriority.Name == "Immediate").Count()</p>
-                            </div>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketPriority.Name == "Immediate").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Project Manager"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@projManagerTicket.Where(t => t.TicketPriority.Name == "Immediate").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Developer"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@devticket.Where(t => t.TicketPriority.Name == "Immediate").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Submitter"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@subticket.Where(t => t.TicketPriority.Name == "Immediate").Count()</p>
+                                </div>
+                            }
+                           
                         </div>
                     </div>
                 </section>
@@ -255,72 +310,81 @@
                             <div class="col-md-6">
                                 <a href="@Url.Action("MyIndex","Tickets")" class="h4  mb-none">Unassigned Tickets</a>
                             </div>
-                            <div class="col-md-6">
-                                <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketStatus.Name == "New/Unassigned").Count()</p>
-                            </div>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@db.Tickets.Where(t => t.TicketStatus.Name == "New/Unassigned").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Project Manager"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@projManagerTicket.Where(t => t.TicketStatus.Name == "New/Unassigned").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Developer"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@devticket.Where(t => t.TicketStatus.Name == "New/Unassigned").Count()</p>
+                                </div>
+                            }
+                            @if (User.IsInRole("Submitter"))
+                            {
+                                <div class="col-md-6">
+                                    <p class="h4 text-bold mb-none pull-right">@subticket.Where(t => t.TicketStatus.Name == "New/Unassigned").Count()</p>
+                                </div>
+                            }
                         </div>
                     </div>
                 </section>
             </div>
         </section>
-
     </div>
-    <div class="col-xl-6 col-lg-12">
 
-        @* ACTIVITY *@
-        <section class="panel">
-            <header class="panel-heading panel-heading-transparent">
-                <div class="panel-actions">
-                    <a href="#" class="fa fa-caret-down"></a>
-                    <a href="#" class="fa fa-times"></a>
-                </div>
-
-                <h2 class="panel-title">Company Activity</h2>
-            </header>
-            <div class="panel-body">
-                <div class="timeline timeline-simple mt-xlg mb-md">
-                    <div class="tm-body">
-                        <div class="tm-title">
-                            <h3 class="h5 text-uppercase">November 2013</h3>
-                        </div>
-                        <ol class="tm-items">
-                            <li>
-                                <div class="tm-box">
-                                    <p class="text-muted mb-none">7 months ago.</p>
-                                    <p>
-                                        It's awesome when we find a good solution for our projects, JSOFT Admin is <span class="text-primary">#awesome</span>
-                                    </p>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="tm-box">
-                                    <p class="text-muted mb-none">7 months ago.</p>
-                                    <p>
-                                        Checkout! How cool is that!
-                                    </p>
-                                    <div class="thumbnail-gallery">
-                                        <a class="img-thumbnail lightbox" href="assets/images/projects/project-4.jpg" data-plugin-options='{ "type":"image" }'>
-                                            <img class="img-responsive" width="215" src="assets/images/projects/project-4.jpg">
-                                            <span class="zoom">
-                                                <i class="fa fa-search"></i>
-                                            </span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
 </div>
 <div class="row">
-   
-
     @if (User.IsInRole("Project Manager") || User.IsInRole("Developer") || User.IsInRole("Submitter"))
     {
-    <div class="col-lg-6 col-md-12">
+        <div class="col-lg-6 col-md-12">
+            <section class="panel panel-primary">
+                <header class="panel-heading">
+                    <div class="panel-actions">
+                        <a href="#" class="fa fa-caret-down"></a>
+                        <a href="#" class="fa fa-times"></a>
+                    </div>
+
+                    <h2 class="panel-title">My Projects</h2>
+                </header>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-none">
+                            <thead>
+                                <tr>
+
+                                    <th>Project</th>
+                                    <th>Description</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var project in myProjects)
+                                {
+                                    <tr>
+
+                                        <td>@project.Name</td>
+                                        <td><span>@project.Description</span></td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    }
+    <div class="col-md-6">
         <section class="panel panel-primary">
             <header class="panel-heading">
                 <div class="panel-actions">
@@ -328,36 +392,42 @@
                     <a href="#" class="fa fa-times"></a>
                 </div>
 
-                <h2 class="panel-title">My Projects</h2>
+                <h2 class="panel-title">Tickets By Status</h2>
+
             </header>
             <div class="panel-body">
-                <div class="table-responsive">
-                    <table class="table table-striped mb-none">
-                        <thead>
-                            <tr>
-                                
-                                <th>Project</th>
-                                <th>Description</th>
-                                
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var project in myProjects)
-                            {
-                                <tr>
-
-                                    <td>@project.Name</td>
-                                    <td><span>@project.Description</span></td>
-
-                                </tr>
-                            }
-
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Morris: Donut -->
+                <div id="myDonut"></div>
             </div>
         </section>
     </div>
-    }
 </div>
-<!-- end: page -->
+
+
+@section scripts{
+
+
+    <script src="~/Scripts/morris.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            $.post('@Url.Action("PieChartData", "Charts")').then(function (response) {
+                new Morris.Bar({
+                    element: 'myDonut',
+                    data: response,
+                    gridTextSize: 10,
+                    //xLabelAngle: 60,
+                    xkey: 'Label',
+                    ykeys: ['Value'],
+                    labels: ['Ticket Count'],
+                    resize: true,
+                    hideHover: 'auto'
+                });
+            });
+        });
+    </script>
+
+}
+
+
+

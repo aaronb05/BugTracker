@@ -16,11 +16,10 @@
 
 }
 
-
-
-
 <!doctype html>
 <html class="fixed">
+
+
 <head>
 
     <!-- Basic -->
@@ -30,13 +29,14 @@
     @*<meta name="keywords" content="HTML5 Admin Template" />
         <meta name="description" content="JSOFT Admin - Responsive HTML5 Template">
         <meta name="author" content="JSOFT.net">*@
-    <link href="~/Images/favicon.ico" rel="shortcut icon"/>
+    <link href="~/Images/favicon.ico" rel="shortcut icon" />
 
     <!-- Mobile Metas -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <!-- Web Fonts  -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
+
 
     <!-- Vendor CSS -->
     <link href="~/Content/bootstrap.css" rel="stylesheet" />
@@ -54,7 +54,7 @@
     <link href="~/Content/bootstrap-multiselect.css" rel="stylesheet" />
 
     <link href="~/Content/morris.css" rel="stylesheet" />
- 
+
 
     <!-- Theme CSS -->
 
@@ -66,9 +66,12 @@
 
     <link href="~/Content/theme-custom.css" rel="stylesheet" />
     <!-- Head Libs -->
-    
+
     <script src="~/Content/modernizr.js"></script>
 </head>
+
+
+
 <body>
     <section class="body">
 
@@ -76,8 +79,8 @@
         <header class="header">
             <div class="logo-container">
                 @*<div class="logo">
-                    <img src="~/Images/BetterLogo.png" height="60" />
-                </div>*@
+                        <img src="~/Images/BetterLogo.png" height="60" />
+                    </div>*@
                 <div class="visible-xs toggle-sidebar-left" data-toggle-class="sidebar-left-opened" data-target="html" data-fire-event="sidebar-left-toggle">
                     <i class="fa fa-bars" aria-label="Toggle sidebar"></i>
                 </div>
@@ -150,7 +153,7 @@
                 <div id="userbox" class="userbox">
                     <a href="#" data-toggle="dropdown">
                         <figure class="profile-picture">
-                            <img src="@user.AvatarUrl" class="img-circle"/>
+                            <img src="@user.AvatarUrl" class="img-circle" />
                         </figure>
                         <div class="profile-info">
                             <span class="name">@user.FullName</span>
@@ -219,13 +222,13 @@
                                         </ul>
                                         <ul class="nav nav-children">
                                             <li>
-                                                
+
                                                 <a href="@Url.Action("Index", "Projects")">Projects</a>
                                             </li>
                                         </ul>
                                         <ul class="nav nav-children">
                                             <li>
-                                                
+
                                                 <a href="@Url.Action("Index", "Tickets")">Tickets</a>
                                             </li>
                                         </ul>
@@ -431,7 +434,7 @@
 
             </aside>
             <!-- end: sidebar -->
-            <section role="main" class="content-body">
+            <section role="main" class="content-body" id="background">
                 @RenderBody()
             </section>
         </div>
@@ -531,19 +534,13 @@
     <script src="~/Scripts/jquery.flot.resize.js"></script>
     <script src="~/Scripts/jquery.sparkline.js"></script>
     <script src="~/Scripts/raphael.js"></script>
-    <script src="~/Scripts/morris.js"></script>
+
     <script src="~/Scripts/gauge.js"></script>
     <script src="~/Scripts/snap.svg.js"></script>
     <script src="~/Scripts/liquid.meter.js"></script>
     <script src="~/Scripts/jquery.vmap.js"></script>
     <script src="~/Scripts/jquery.vmap.sampledata.js"></script>
-    <script src="~/Scripts/jquery.vmap.world.js"></script>
-    <script src="~/Scripts/jquery.vmap.africa.js"></script>
-    <script src="~/Scripts/jquery.vmap.asia.js"></script>
-    <script src="~/Scripts/jquery.vmap.australia.js"></script>
-    <script src="~/Scripts/jquery.vmap.europe.js"></script>
-    <script src="~/Scripts/jquery.vmap.north-america.js"></script>
-    <script src="~/Scripts/jquery.vmap.south-america.js"></script>
+
     <!-- Theme Base, Components and Settings -->
     <script src="~/Scripts/theme.js"></script>
     <!-- Theme Custom -->
@@ -555,7 +552,7 @@
     <script src="~/Scripts/examples.dashboard.js"></script>
     <script src="~/Scripts/select2.js"></script>
 
-    
+
 
     @RenderSection("scripts", required: false)
 
